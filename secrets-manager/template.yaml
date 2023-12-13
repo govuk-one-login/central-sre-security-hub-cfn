@@ -9,9 +9,11 @@ Parameters:
   SecretName:
     Description: The secret name.
     Type: String
+
   SecretDescription:
     Description: The secret description.
     Type: String
+
   PeriodicRotationDays:
     Description: The number of days between rotations of this secret.
     Type: Number
