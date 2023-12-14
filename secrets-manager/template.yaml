@@ -2,7 +2,8 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >
   central-sre-security-hub-cfn secrets-manager template version: v0.0.1
-  Enforces: security hub rules SCRTS01, SCRTS03, SCRTS05. 
+  Enforces: security hub rule(s) SCRTS01, SCRTS03, SCRTS05.
+  Supports: security hub rule(s) SCRTS04. 
   Managed by: central-sre.
 
 Parameters:
@@ -33,6 +34,16 @@ Parameters:
     Type: String
     AllowedPattern: "^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$"
     ConstraintDescription: Must be a valid KMS key Id (uuid format)
+
+  NotifyAfterUnusedForDays:
+    Description: > 
+      Secrets that have not been used for 90 days will be marked as non-compliant.
+      Use this with your rotation lambda to identify unused secrets so you can remove them from your stacks.
+    Type: Number
+    MaxValue: 90
+    MinValue: 1
+    Default: 90
+    ConstraintDescription: Must be a value between 1 and 90.
       
 Resources: 
   SecretsManagerSecret:
@@ -41,6 +52,18 @@ Resources:
       Description: !Ref SecretDescription
       KmsKeyId: !Ref KmsKeyId
       Name: !Ref SecretName
+      Tags:
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref SecretName
+        - Key: Service
+          Value: "sre"
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/secrets-manager/template.yaml"
+        - Key: NotifyAfterUnusedForDays
+          Value: !Ref NotifyAfterUnusedForDays
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
       
