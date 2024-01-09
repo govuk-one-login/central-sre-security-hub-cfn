@@ -22,9 +22,15 @@ Parameters:
     Default: ''
  
   AlertStack:
-    Description: 'Optional but recommended stack name for a alerting template if one exists.'
+    Description: 'Optional but recommended stack name for a alerting/monitoring template if one exists.'
     Type: String
     Default: ''
+
+  AlertstackARN:
+    Description: 'ARN of the cloudtrail that will be monitoring the API calls'
+    Type: String
+    AllowedPattern: "arn:aws:cloudtrail:.*"
+    ConstraintDescription: Must be a valid cloudtrail arn
  
   Service:
     Description: 'Which AWS service is allowed to use this CMK (upper-case names define use-cases)'
@@ -246,7 +252,7 @@ Resources:
           - DisableKey
       State: ENABLED
       Targets:
-      - Arn: {'Fn::ImportValue': !Sub '${AlertStack}-TopicARN'}
+      - Arn: !Ref AlertstackARN
         Id: rule
 
 
