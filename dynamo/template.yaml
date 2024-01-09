@@ -1,5 +1,4 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: AWS::LanguageExtensions
 #Base case one primary key
 Description: >
   central-sre-security-hub-cfn dynamo template version: v0.0.1
@@ -88,7 +87,7 @@ Parameters:
 
   Product:
     Type: String
-    Default: Central SRE - test
+    Default: GOV.UK
     Description: Tag all your resources with the product name.
 
   System:
@@ -151,6 +150,7 @@ Resources:
       - Key: Owner
         Value: !Ref Owner
 
+#template to prepare to use KMS nested stack from SW-146
   DynamoKeyModule:
     Type: 'AWS::CloudFormation::Stack'
     DeletionPolicy: Retain
@@ -164,7 +164,7 @@ Resources:
         Service: cloudtrail
         KeySpec: SYMMETRIC_DEFAULT
         KeyUsage: ENCRYPT_DECRYPT
-        
+  
   # DynamoKey:
   #   Type: AWS::KMS::Key
   #   Properties:
@@ -199,7 +199,7 @@ Resources:
   # DynamoKeyAlias:
   #   Type: AWS::KMS::Alias
   #   Properties:
-  #     AliasName: !Sub "alias/${AWS::StackName}-session-events-table-key"
+  #     AliasName: !Sub "alias/${AWS::StackName}-table-key"
   #     TargetKeyId: !GetAtt DynamoKey.id
 
 # cloud watch log groups on the key
@@ -218,9 +218,10 @@ Resources:
       S3BucketName: !Ref CloudTrailBucket
       CloudWatchLogsLogGroupArn: !GetAtt CloudTrailLogGroup.Arn
       CloudWatchLogsRoleArn: !GetAtt CloudTrailLogRole.Arn
-  #Refer to Nana's Template here to follow best practice
+  #Refer to s3 Template here to follow best practice SW-126
   # CloudTrailLogBucket:
   #   Type: AWS::S3::Bucket
+
 #Iam role for the cloudtrail log group to enable it to deliver log to the log group
   CloudTrailLogRole:
     Type: 'AWS::IAM::Role'
@@ -260,29 +261,26 @@ Resources:
       RoleName: !Ref CloudTrailLogRole
 
 Outputs:
-  SessionEventsTableName:
+  TableName:
     Description: "The name of the DynamoDB table"
     Value: !Ref DynamoDB
     Export:
       Name: !Sub "${AWS::StackName}-table-name"
-  SessionEventsTableArn:
+  TableArn:
     Description: "The Arn of the DynamoDB table"
     Value: !GetAtt DynamoDB.Arn
     Export:
       Name: !Sub "${AWS::StackName}-table-arn"
-  SessionEventsTableKeyArn:
+  TableKeyArn:
     Description: "The Arn of the table encryption key"
-    Value: !GetAtt DynamoKey.Arn
+    Value: !GetAtt DynamoKeyModule.KeyArn
     Export:
       Name: !Sub "${AWS::StackName}-dynamo-key-arn"
-  SessionEventsTableKeyId:
-    Description: "The Id of the Session Events table encryption key"
-    Value: !Ref DynamoKey
+  TableKeyId:
+    Description: "The Id of the Events table encryption key"
+    Value: !GetAtt DynamoKeyModule.KeyId
     Export:
       Name: !Sub "${AWS::StackName}-dynamo-key-id"
-  SessionEventsTableKeyAlias:
-    Description: "The Alias of the Session Events encryption key"
-    Value: !Ref DynamoKeyAlias
 
 Metadata: 
   AWS::CloudFormation::Interface: 

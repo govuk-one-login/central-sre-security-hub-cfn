@@ -8,14 +8,18 @@
 
 ## - Using CloudTrail to monitor KMS key usage
 
-## - Tagging Dynamo Resources folling GDS standard
+## - Tagging Dynamo Resources following GDS standard
+
+## - Pass Security Hub checks
 
 # To Do 
 
-## - Look at the outputs
-
 ## - Utilize S3 template to store the CloudTrail Logs
 
-## - clean parameters and tagging
+## - Once KMS template uploaded to s3 then use the KMS template to create the dynamo encryption key
 
-## - test both the single and compisite key cases in security hub.
+## - Get the If statements working
+
+## - Add more tagging for IAM role and Cloudtrail
+
+## - test both the single and compisite key cases in Security Hub.

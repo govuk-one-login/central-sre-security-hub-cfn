@@ -1,5 +1,4 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: AWS::LanguageExtensions
 #Composite Key
 Description: >
   central-sre-security-hub-cfn dynamo template version: v0.0.1
@@ -182,7 +181,7 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: !Ref PointInTimeRecoveryEnabled
       SSESpecification:
-        KMSMasterKeyId: !Ref SessionEventsTableKey
+        KMSMasterKeyId: !GetAtt DynamoKey.id
         SSEEnabled: true
         SSEType: KMS
       StreamSpecification:
@@ -233,7 +232,7 @@ Resources:
   DynamoKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-session-events-table-key"
+      AliasName: !Sub "alias/${AWS::StackName}-table-key"
       TargetKeyId: !GetAtt DynamoKey.id
 
 # cloud watch log groups on the key
