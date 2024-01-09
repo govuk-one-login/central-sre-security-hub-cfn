@@ -21,16 +21,11 @@ Parameters:
     Type: CommaDelimitedList
     Default: ''
  
-  AlertStack:
-    Description: 'Optional but recommended stack name for a alerting/monitoring template if one exists.'
+  AlertTopicARN:
+    Description: 'ARN of the SNS topic'
     Type: String
     Default: ''
-
-  AlertstackARN:
-    Description: 'ARN of the cloudtrail that will be monitoring the API calls'
-    Type: String
-    AllowedPattern: "arn:aws:cloudtrail:.*"
-    ConstraintDescription: Must be a valid cloudtrail arn
+    
  
   Service:
     Description: 'Which AWS service is allowed to use this CMK (upper-case names define use-cases)'
@@ -81,7 +76,7 @@ Conditions:
       HasServiceCloudFront: !Equals [!Ref Service, 'CLOUDFRONT']
       HasServiceCloudTrail: !Equals [!Ref Service, 'CLOUDTRAIL']
       HasService: !Not [!Or [!Condition HasServiceAllServices, !Condition HasServiceS3PublicAccess, !Condition HasServiceRoute53Dnssec, !Condition HasServiceCloudFront, !Condition HasServiceCloudTrail]]
-      HasAlertTopic: !Not [!Equals [!Ref AlertStack, '']]
+      HasAlertTopic: !Not [!Equals [!Ref AlertTopicARN, '']]
       AllowedAccountsNotEmpty: !Not [!Equals [!Join ["", !Ref AllowedAccounts], ""]]      
 
 Resources:
@@ -252,7 +247,7 @@ Resources:
           - DisableKey
       State: ENABLED
       Targets:
-      - Arn: !Ref AlertstackARN
+      - Arn: !Ref AlertTopicARN
         Id: rule
 
 
