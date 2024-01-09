@@ -4,11 +4,7 @@ Description: >
   Enforces: security hub rule(s) 
   - DYDB01
   - DYDB02
-  - DYDB04 
-  - SCRTS01
-  - SCRTS03
-  - SCRTS05.
-  Supports: security hub rule(s) SCRTS04. 
+  - DYDB04
   Managed by: central-sre.
 
 Parameters:
