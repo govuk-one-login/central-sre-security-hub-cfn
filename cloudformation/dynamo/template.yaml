@@ -22,7 +22,7 @@ Parameters:
   ProvisionedThroughputEnabled:
     Description: Enabling the database to be running in provisioned throughput mode.
     Default: false
-    Type: Boolean
+    Type: String
     AllowedValues:
          - true
          - false
@@ -60,9 +60,9 @@ Parameters:
          - "B"
   
   TimeToLiveEnabled:
-    Type: Boolean
+    Type: String
     Default: true
-    Description: Do you want to enable time to live?
+    Description: Do you want to enable time to live for this table?
     AllowedValues:
       - true
       - false
@@ -71,6 +71,7 @@ Parameters:
     Type: Number
     Default: 365
     Description: The retention for your cloud trail logs on the api key usage. 365 days as a default.
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653]
 
   TimeToLiveColumnName:
     Type: String
@@ -78,7 +79,7 @@ Parameters:
     Description: "Name of the time to live column."
 
   PointInTimeRecoveryEnabled:
-    Type: Boolean
+    Type: String
     Default: true
     Description: Do you want to enable point in time recovery?
     AllowedValues:
@@ -100,7 +101,7 @@ Parameters:
     Default: dev
     Description: Tag the environment to all your resources.
 
-  CloudTrailBucket:
+  CloudTrailLogBucket:
     Type: String
     Default: testbucketnameplsdeleteme
 
@@ -109,8 +110,15 @@ Parameters:
     Default: Central SRE
     Description: Tag all your resources with the team name.
 
+  LogGroupClass:
+    Type: String
+    Default: STANDARD
+    Description: Switch to INFREQUENT_ACCESS if you want to save on cost. 
+
 Resources:
   DynamoDB:
+    DeletionPolicy: Delete
+    UpdateReplacePolicy:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
@@ -158,7 +166,7 @@ Resources:
       TemplateURL: >-
         https://s3.amazonaws.com/###.template
       Parameters:
-        Environment: !!Ref Environment
+        Environment: !Ref Environment
         AllowedAccounts: ''
         AlertStack: ''
         Service: cloudtrail
@@ -206,18 +214,42 @@ Resources:
   CloudTrailLogGroup:
     Type: 'AWS::Logs::LogGroup'
     Properties:
+      LogGroupClass: !Ref LogGroupClass
       LogGroupName: !Sub '/aws/cloudtrail/${AWS::StackName}'
       RetentionInDays: !Ref KeyLogRetention
+    Tags:
+      - Key: Name
+        Value: !Sub "${AWS::StackName}"
+      - Key: Product
+        Value: !Ref Product
+      - Key: System
+        Value: !Ref System
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: Owner
+        Value: !Ref Owner
 
   CloudTrail:
     Type: 'AWS::CloudTrail::Trail'
     Properties:
+      TrailName: !Sub '${AWS::StackName}-CloudTrail-Dynamo-Key'
       IsLogging: true
       IncludeGlobalServiceEvents: true
-      KmsKeyId: !GetAtt KMSKey.Arn DynamoKeyModule.Outputs.KeyArn
-      S3BucketName: !Ref CloudTrailBucket
+      KmsKeyId: !GetAtt DynamoKeyModule.Outputs.KeyArn #KMSKey.Arn 
+      S3BucketName: !Ref CloudTrailLogBucket
       CloudWatchLogsLogGroupArn: !GetAtt CloudTrailLogGroup.Arn
       CloudWatchLogsRoleArn: !GetAtt CloudTrailLogRole.Arn
+    Tags:
+      - Key: Name
+        Value: !Sub "${AWS::StackName}"
+      - Key: Product
+        Value: !Ref Product
+      - Key: System
+        Value: !Ref System
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: Owner
+        Value: !Ref Owner
   #Refer to s3 Template here to follow best practice SW-126
   # CloudTrailLogBucket:
   #   Type: AWS::S3::Bucket
@@ -281,14 +313,18 @@ Outputs:
     Value: !GetAtt DynamoKeyModule.KeyId
     Export:
       Name: !Sub "${AWS::StackName}-dynamo-key-id"
-
+  CloudTrailLogGroupName:
+    Description: Name of the log group in cloud trail that is used to monitor KMS key usage for this dynamo table.
+    Value: !Ref CloudTrailLogGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-cloudtrail-loggroup-name"
+      
 Metadata: 
   AWS::CloudFormation::Interface: 
     ParameterGroups:
       - Label:
           default: "Manditory Tags"
         Parameters: 
-          - Name
           - Product
           - System
           - Environment
