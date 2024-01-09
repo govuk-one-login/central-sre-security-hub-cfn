@@ -1,0 +1,280 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::LanguageExtensions
+#Composite Key
+Description: >
+  central-sre-security-hub-cfn dynamo template version: v0.0.1
+  Enforces: security hub rule(s) 
+  - DYDB01
+  - DYDB02
+  - DYDB09
+  - DYDB10
+  - ADR 0134
+  - DYDB03 
+  - DYDB04 
+  - DYDB05
+  - DYDB11
+  - SCRTS01
+  - SCRTS03
+  - SCRTS05.
+  Supports: security hub rule(s) SCRTS04. 
+  Managed by: central-sre.
+
+Parameters:
+  ProvisionedThroughputEnabled:
+    Description: Enabling the database to be running in provisioned throughput mode.
+    Default:
+         - "Disabled"
+    Type: String
+    AllowedValues:
+         - "Enabled"
+         - "Disabled"
+
+  ProvisionedThroughput:
+    Description: The amount of throughput provisioned to the database.
+    Type: Number
+
+  DynamoName: 
+    Description: The name you want to give your Dynamo Database.
+    Type: String
+    MinLength: 3
+    MaxLength: 255
+
+  BillingMode:
+    Description: How the account is charged for the read write throughput to this table.
+    Type: String
+    Default: "PROVISIONED"
+    AllowedValues:
+         - "PROVISIONED"
+         - "PAY_PER_REQUEST"
+
+# 1-n AttributeName 1-n AttributeTypes
+# constrained
+# Put into a json map AttributeDefinitions
+  AttributeNames:
+    Description: Attributes for describing the key schema for the table and indexes. Must be defined as JSON.
+    Type: List<String>
+    Default: '[id]'
+    AllowedPattern: '^(\[.*\])$'
+    MinLength: 1
+    MaxLength: 255
+
+  AttributeTypes:
+    Description: Attributes for describing the key schema for the table and indexes. Must be defined as JSON.
+    Type: String
+    Default: ['N']
+    AllowedValues:
+      - 'S'
+      - 'N' 
+      - 'B'
+  
+  TimeToLiveEnabled:
+    Type: Boolean
+    Default: true
+    Description: Do you want to enable time to live?
+    AllowedValues:
+      - true
+      - false
+
+  TimeToLiveColumnName:
+    Type: String
+    Default: "TTL"
+    Description: "Name of the time to live column."
+
+  PointInTimeRecoveryEnabled:
+    Type: Boolean
+    Default: true
+    Description: Do you want to enable point in time recovery?
+    AllowedValues:
+      - true
+      - false
+
+  PartitionKeyName:
+    Description: The Name of your partition key for the table. Must be defined as a list.
+    Type: String
+    Default: "id"
+    MinLength: 1
+    MaxLength: 255
+  
+  SortKeyName:
+    Description: The Name of your sort key for the table.
+    Type: String
+    Default: "timestamp"
+    MinLength: 1
+    MaxLength: 255
+
+  PartitionKeyType:
+    Description: The type of your partition key for the table.
+    Type: String
+    Default: ['S']
+    AllowedValues:
+      - 'S'
+      - 'N' 
+      - 'B'
+  
+  SortKeyType:
+    Description: The type of your sort key for the table.
+    Type: String
+    Default: ['S']
+    AllowedValues:
+      - 'S'
+      - 'N' 
+      - 'B'
+  
+  KeyLogRetention:
+    Type: Number
+    Default: 365
+    Description: The retention for your cloud trail logs on the api key usage. 365 days as a default.
+
+  TimeToLiveColumnName:
+    Type: String
+    Default: "TTL"
+    Description: "Name of the time to live column."
+
+  PointInTimeRecoveryEnabled:
+    Type: Boolean
+    Default: true
+    Description: Do you want to enable point in time recovery?
+    AllowedValues:
+      - true
+      - false
+
+  Product:
+    Type: String
+    Default: Central SRE - test
+    Description: Tag all your resources with the product name.
+
+  System:
+    Type: String
+    Default: Central SRE -test service
+    Description: Tag all your resources with the service name.
+
+  Environment:
+    Type: String
+    Default: dev
+    Description: Tag the environment to all your resources.
+
+  Owner:
+    Type: String
+    Default: Central SRE
+    Description: Tag all your resources with the team name.
+
+Resources:
+  DynamoDB:
+    Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: !Ref PartitionKeyName
+          AttributeType: !!Ref PartitionKeyType
+        - AttributeName: !Ref SortKeyName
+          AttributeType: !!Ref SortKeyType
+      KeySchema: 
+        - AttributeName: !Ref PartitionKeyName
+          KeyType: "HASH"
+        - AttributeName: !Ref SortKeyName
+          KeyType: "RANGE"
+      BillingMode: !Ref BillingMode
+      TableName: !Ref DynamoName
+      TimeToLiveSpecification:
+        AttributeName: !Ref TimeToLiveColumnName
+        Enabled: !Ref TimeToLiveEnabled
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: !Ref PointInTimeRecoveryEnabled
+      SSESpecification:
+        KMSMasterKeyId: !Ref SessionEventsTableKey
+        SSEEnabled: true
+        SSEType: KMS
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+    Tags:
+      - Key: Name
+        Value: !Sub "${AWS::StackName}"
+      - Key: Product
+        Value: !Ref Product
+      - Key: System
+        Value: !Ref System
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: Owner
+        Value: !Ref Owner
+
+  DynamoKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: !Sub "${!Ref TableName} -  table key"
+      Enabled: true
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !Ref KmsPendingWindowInDays
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "Allow the account to manage the key"
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+    Tags:
+      - Key: Name
+        Value: !Sub "${AWS::StackName}"
+      - Key: Product
+        Value: !Ref Product
+      - Key: System
+        Value: !Ref System
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: Owner
+        Value: !Ref Owner
+
+  DynamoKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-session-events-table-key"
+      TargetKeyId: !GetAtt DynamoKey.id
+
+# cloud watch log groups on the key
+  CloudTrailLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws/cloudtrail/${AWS::StackName}'
+      RetentionInDays: !Ref KeyLogRetention
+
+  CloudTrail:
+    Type: 'AWS::CloudTrail::Trail'
+    Properties:
+      IsLogging: true
+      IncludeGlobalServiceEvents: true
+      KmsKeyId: !GetAtt KMSKey.Arn
+      S3BucketName: MyCloudTrailBucket
+      CloudWatchLogsLogGroupArn: !GetAtt CloudTrailLogGroup.Arn
+      CloudWatchLogsRoleArn: !GetAtt CloudTrailLogRole.Arn
+  #Refer to Nana's Template here to follow best practice
+  CloudTrailLogBucket:
+    Type: AWS::S3::Bucket
+#Iam role for the cloudtrail log group to enable it to deliver log to the log group
+  CloudTrailLogRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-CloudTrail-Log-Role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CloudTrailLogPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt CloudTrailLogGroup.Arn

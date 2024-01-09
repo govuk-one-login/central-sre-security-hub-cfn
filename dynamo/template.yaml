@@ -1,0 +1,297 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::LanguageExtensions
+#Base case one primary key
+Description: >
+  central-sre-security-hub-cfn dynamo template version: v0.0.1
+  Enforces: security hub rule(s) 
+  - DYDB01
+  - DYDB02
+  - DYDB09
+  - DYDB10
+  - ADR 0134
+  - DYDB03 
+  - DYDB04 
+  - DYDB05
+  - DYDB11
+  - SCRTS01
+  - SCRTS03
+  - SCRTS05.
+  Supports: security hub rule(s) SCRTS04. 
+  Managed by: central-sre.
+
+Parameters:
+  ProvisionedThroughputEnabled:
+    Description: Enabling the database to be running in provisioned throughput mode.
+    Default: false
+    Type: Boolean
+    AllowedValues:
+         - true
+         - false
+
+  # Dynamo Naturally throttles reads on 40k per table and 80k per account
+  ReadCapacityUnits:
+    Description: The maximum number of strongly consistent reads consumed per second before DynamoDB returns a ThrottlingException.
+    Type: Number
+    Default: 300
+    MinValue: 100
+    MaxValue: 20000 
+
+  # Dynamo Naturally throttles writes on 40k per table and 80k per account
+  WriteCapacityUnits: 
+    Description: The maximum number of writes consumed per second before DynamoDB returns a ThrottlingException.
+    Type: Number
+    Default: 300  
+    MinValue: 100 
+    MaxValue: 20000 
+
+  PrimaryKeyName:
+    Description: The Name of your primary key for the table. Must be defined as a list.
+    Type: String
+    Default: "id"
+    MinLength: 1
+    MaxLength: 255
+
+  PrimaryKeyType:
+    Description: List of the primary key types for the table. Must be defined as a list.
+    Type: String
+    Default: "S"
+    AllowedValues:
+         - "S"
+         - "N"
+         - "B"
+  
+  TimeToLiveEnabled:
+    Type: Boolean
+    Default: true
+    Description: Do you want to enable time to live?
+    AllowedValues:
+      - true
+      - false
+
+  KeyLogRetention:
+    Type: Number
+    Default: 365
+    Description: The retention for your cloud trail logs on the api key usage. 365 days as a default.
+
+  TimeToLiveColumnName:
+    Type: String
+    Default: "TTL"
+    Description: "Name of the time to live column."
+
+  PointInTimeRecoveryEnabled:
+    Type: Boolean
+    Default: true
+    Description: Do you want to enable point in time recovery?
+    AllowedValues:
+      - true
+      - false
+
+  Product:
+    Type: String
+    Default: Central SRE - test
+    Description: Tag all your resources with the product name.
+
+  System:
+    Type: String
+    Default: Central SRE - test service
+    Description: Tag all your resources with the service name.
+
+  Environment:
+    Type: String
+    Default: dev
+    Description: Tag the environment to all your resources.
+
+  CloudTrailBucket:
+    Type: String
+    Default: testbucketnameplsdeleteme
+
+  Owner:
+    Type: String
+    Default: Central SRE
+    Description: Tag all your resources with the team name.
+
+Resources:
+  DynamoDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: !Ref PrimaryKeyName
+          AttributeType: !Ref PrimaryKeyType
+      KeySchema:
+        - AttributeName: !Ref PrimaryKeyName
+          KeyType: "HASH"
+      BillingMode: !If
+        - ProvisionedThroughputEnabled
+        - "PROVISIONED"
+        - "PAY_PER_REQUEST"
+      ProvisionedThroughput:
+        ReadCapacityUnits: !If [!Ref ProvisionedThroughputEnabled, !Ref ReadCapacityUnits, 0]
+        WriteCapacityUnits: !If [!Ref ProvisionedThroughputEnabled, !Ref WriteCapacityUnits, 0]
+      TableName: !Ref DynamoName
+      TimeToLiveSpecification:
+        AttributeName: !Ref TimeToLiveColumnName
+        Enabled: !Ref TimeToLiveEnabled
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: !Ref PointInTimeRecoveryEnabled
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoKey.id
+        SSEEnabled: true
+        SSEType: KMS
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+    Tags:
+      - Key: Name
+        Value: !Sub "${AWS::StackName}"
+      - Key: Product
+        Value: !Ref Product
+      - Key: System
+        Value: !Ref System
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: Owner
+        Value: !Ref Owner
+
+  DynamoKeyModule:
+    Type: 'AWS::CloudFormation::Stack'
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: >-
+        https://s3.amazonaws.com/###.template
+      Parameters:
+        Environment: !!Ref Environment
+        AllowedAccounts: ''
+        AlertStack: ''
+        Service: cloudtrail
+        KeySpec: SYMMETRIC_DEFAULT
+        KeyUsage: ENCRYPT_DECRYPT
+        
+  # DynamoKey:
+  #   Type: AWS::KMS::Key
+  #   Properties:
+  #     Description: !Sub "${!Ref TableName} -  table key"
+  #     Enabled: true
+  #     KeySpec: SYMMETRIC_DEFAULT
+  #     KeyUsage: ENCRYPT_DECRYPT
+  #     MultiRegion: false
+  #     PendingWindowInDays: !Ref KmsPendingWindowInDays
+  #     EnableKeyRotation: true
+  #     KeyPolicy:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Sid: "Allow the account to manage the key"
+  #           Effect: Allow
+  #           Principal:
+  #             AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+  #           Action: "kms:*"
+  #           Resource: "*"
+  #   Tags:
+  #     - Key: Name
+  #       Value: !Sub "${AWS::StackName}"
+  #     - Key: Product
+  #       Value: !Ref Product
+  #     - Key: System
+  #       Value: !Ref System
+  #     - Key: Environment
+  #       Value: !Ref Environment
+  #     - Key: Owner
+  #       Value: !Ref Owner
+
+  # DynamoKeyAlias:
+  #   Type: AWS::KMS::Alias
+  #   Properties:
+  #     AliasName: !Sub "alias/${AWS::StackName}-session-events-table-key"
+  #     TargetKeyId: !GetAtt DynamoKey.id
+
+# cloud watch log groups on the key
+  CloudTrailLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws/cloudtrail/${AWS::StackName}'
+      RetentionInDays: !Ref KeyLogRetention
+
+  CloudTrail:
+    Type: 'AWS::CloudTrail::Trail'
+    Properties:
+      IsLogging: true
+      IncludeGlobalServiceEvents: true
+      KmsKeyId: !GetAtt KMSKey.Arn DynamoKeyModule.Outputs.KeyArn
+      S3BucketName: !Ref CloudTrailBucket
+      CloudWatchLogsLogGroupArn: !GetAtt CloudTrailLogGroup.Arn
+      CloudWatchLogsRoleArn: !GetAtt CloudTrailLogRole.Arn
+  #Refer to Nana's Template here to follow best practice
+  # CloudTrailLogBucket:
+  #   Type: AWS::S3::Bucket
+#Iam role for the cloudtrail log group to enable it to deliver log to the log group
+  CloudTrailLogRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-CloudTrail-Log-Role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: sts:AssumeRole
+      # Policies:
+        # - PolicyName: CloudTrailLogPolicy
+        #   PolicyDocument:
+        #     Version: '2012-10-17'
+        #     Statement:
+        #       - Effect: Allow
+        #         Action:
+        #           - logs:CreateLogGroup
+        #           - logs:CreateLogStream
+        #           - logs:PutLogEvents
+        #         Resource: !GetAtt CloudTrailLogGroup.Arn
+  CloudTrailPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: CloudTrailLogPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !GetAtt CloudTrailLogGroup.Arn
+      RoleName: !Ref CloudTrailLogRole
+
+Outputs:
+  SessionEventsTableName:
+    Description: "The name of the DynamoDB table"
+    Value: !Ref DynamoDB
+    Export:
+      Name: !Sub "${AWS::StackName}-table-name"
+  SessionEventsTableArn:
+    Description: "The Arn of the DynamoDB table"
+    Value: !GetAtt DynamoDB.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-table-arn"
+  SessionEventsTableKeyArn:
+    Description: "The Arn of the table encryption key"
+    Value: !GetAtt DynamoKey.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-dynamo-key-arn"
+  SessionEventsTableKeyId:
+    Description: "The Id of the Session Events table encryption key"
+    Value: !Ref DynamoKey
+    Export:
+      Name: !Sub "${AWS::StackName}-dynamo-key-id"
+  SessionEventsTableKeyAlias:
+    Description: "The Alias of the Session Events encryption key"
+    Value: !Ref DynamoKeyAlias
+
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups:
+      - Label:
+          default: "Manditory Tags"
+        Parameters: 
+          - Name
+          - Product
+          - System
+          - Environment
+          - Owner
