@@ -37,7 +37,6 @@ Parameters:
     - 'CLOUDTRAIL'
     - 'CLOUDFRONT'
     - lambda
-    - redshift
     - rds
     - secretsmanager
     - ses
@@ -67,9 +66,25 @@ Parameters:
     - ENCRYPT_DECRYPT
     - SIGN_VERIFY
     Default: ENCRYPT_DECRYPT
+  
+
+  KMSDeletionPolicy:
+    Description: 'Attribute you can preserve, and in some cases, backup a resource when its stack is deleted' 
+    Type: String
+    AllowedValues:
+    - Retain
+    - Delete
+    Default: Retain
+  
+  KMSUpdateReplacePolicy:
+    Description: 'Attribute to retain or, in some cases, backup the existing physical instance of a resource when it is replaced during a stack update operation.' 
+    Type: String
+    AllowedValues:
+    - Retain
+    - Delete
+    Default: Retain
 
 Conditions:
-      HasSymmetricKey: !Equals [!Ref KeySpec, 'SYMMETRIC_DEFAULT']
       HasServiceAllServices: !Equals [!Ref Service, 'ALL_SERVICES']
       HasServiceS3PublicAccess: !Equals [!Ref Service, 'S3_PUBLIC_ACCESS']
       HasServiceRoute53Dnssec: !Or [!Equals [!Ref Service, 'ROUTE53_DNSSEC'], !Equals [!Ref Service, 'dnssec-route53']]
@@ -81,11 +96,11 @@ Conditions:
 
 Resources:
   Key:
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    DeletionPolicy: !Ref KMSDeletionPolicy
+    UpdateReplacePolicy: !Ref KMSUpdateReplacePolicy
     Type: 'AWS::KMS::Key'
     Properties:
-      EnableKeyRotation: !If [HasSymmetricKey, true, false]
+      EnableKeyRotation: true
       KeySpec: !Ref KeySpec
       KeyUsage: !Ref KeyUsage
       Tags:
@@ -221,8 +236,8 @@ Resources:
             - !Ref AWS::NoValue
 
   KeyAlias:
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    DeletionPolicy: !Ref KMSDeletionPolicy
+    UpdateReplacePolicy: !Ref KMSUpdateReplacePolicy
     Type: 'AWS::KMS::Alias'
     Properties:
       AliasName: !Sub 'alias/${AWS::StackName}'
