@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Define the path to your CloudFormation template
+TEMPLATE_PATH="./template.yaml"
+
+# Install cfn-lint if not already installed
+pip install cfn-lint
+
+# Run cfn-lint to check for issues
+cfn-lint $TEMPLATE_PATH
+
+# Run aws cloudformation validate-template to perform basic validation
+aws cloudformation validate-template --template-body file://$TEMPLATE_PATH
+
+# Check the exit codes and display appropriate messages
+if [ $? -eq 0 ]; then
+  echo "Template validation and linting passed successfully."
+else
+  echo "Template validation or linting failed. Please review the errors above."
+  exit 1
+fi
