@@ -61,7 +61,7 @@ Resources:
         - Key: Service
           Value: "sre"
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/secrets-manager/template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/secrets-manager/template.yaml"
         - Key: NotifyAfterUnusedForDays
           Value: !Ref NotifyAfterUnusedForDays
     UpdateReplacePolicy: Delete
