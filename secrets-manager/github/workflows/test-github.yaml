@@ -27,4 +27,4 @@ jobs:
     - name: Validate AWS CloudFormation stack
       run: |
         aws cloudformation validate-template \
-          --template-body secrets-manager/template.yaml
+          --template-body secrets-manager/emplate.yaml
