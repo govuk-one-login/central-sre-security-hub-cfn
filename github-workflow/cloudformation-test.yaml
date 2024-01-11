@@ -1,0 +1,30 @@
+name: Lint and AWS CloudFormation Validate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9.18'
+
+    - name: Install cfn-lint
+      run: |
+        pip install cfn-lint
+
+    - name: Run cfn-lint to check for issues
+      run: |
+        cfn-lint secrets-manager/template.yaml
+
+    - name: Validate AWS CloudFormation stack
+      run: |
+        aws cloudformation validate-template \
+          --template-body secrets-manager/template.yaml
