@@ -22,9 +22,9 @@ jobs:
 
     - name: Run cfn-lint to check for issues
       run: |
-        cfn-lint secrets-manager/template.yaml
+        cfn-lint cloudformation/secret-manager/template-test.yaml
 
     - name: Validate AWS CloudFormation stack
       run: |
         aws cloudformation validate-template \
-          --template-body cloudformation/template-test.yaml
+          --template-body cloudformation/secret-manager/template-test.yaml
