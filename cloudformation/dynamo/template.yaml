@@ -30,7 +30,9 @@ Parameters:
     Type: String
 
   ProvisionedThroughputEnabled:
-    Description: "Do you want to enable the database to be run in provisioned throughput mode?"
+    Description: "Do you want to enable the database to be run in provisioned throughput mode?
+                  Dynamo Naturally throttles reads and writes above 40k capacity units / second per table and 80k capacity units / second per account. 
+                  If you enable provisioned throughput please also configure target and minimum and maxium values for read, write autoscaling."
     Default: false
     Type: String
     AllowedValues:
