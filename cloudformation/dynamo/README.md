@@ -4,18 +4,26 @@
 
 # Actions
 
-### - Using a unique KMS key to encrypt each database
+### All remediation actions were completed following the approach recommended by AWS. https://docs.aws.amazon.com/securityhub/latest/userguide/dynamodb-controls.html#dynamodb-1 
 
-### - Using CloudTrail to monitor KMS key usage
+### DynamoDB.1: DynamoDB tables should automatically scale capacity with demand
+
+### Solution: Tables should be in Pay Per Request Mode or be in provissioned mode with auto scaling. 
+
+### DynamoDB.2: DynamoDB tables have point in time recovery enabled
+
+### DynamoDB.4: DynamoDB tables should provide a backup plan.
+
+### Solution: Utilizing tagging strategies for AWS Backup.
+
+## Other approaches taken
+
+### - Using a unique KMS key to encrypt each database
 
 ### - Tagging Dynamo Resources following GDS standard
 
-### - Pass Security Hub checks
+## Notes
 
 ### - This template does not support global secondary indexes
 
-# To Do 
-
-### - Get the If statements working
-
-### - test both the single and compisite key cases in Security Hub.
+### - DynamoDB.6 Deletion protection is enabled on all tabled was not followed as it prevents team flexibility and experimentation. Potential to turn this rule on for prod only. 
