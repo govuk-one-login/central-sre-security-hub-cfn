@@ -26,7 +26,7 @@ Parameters:
        - false
 
   TableKMSKey:
-    Description: "It is manitory to provide a KMS key ID to encrypt this table at rest. This ID must exist in the account which you are deploying to."
+    Description: "It is mandatory to provide a KMS key ID to encrypt this table at rest. This ID must exist in the account which you are deploying to."
     Type: String
 
   ProvisionedThroughputEnabled:
@@ -349,7 +349,7 @@ Metadata:
   AWS::CloudFormation::Interface: 
     ParameterGroups:
       - Label:
-          default: "Manditory Tags"
+          default: "Mandatory Tags"
         Parameters: 
           - Product
           - System
