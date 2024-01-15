@@ -8,13 +8,13 @@
 
 ### DynamoDB.1: DynamoDB tables should automatically scale capacity with demand.
 
-### &nbsp;&nbsp;&nbsp;&nbsp; Solution: Tables should be in Pay Per Request Mode or be in provissioned mode with auto scaling. 
+### &nbsp;&nbsp;&nbsp;&nbsp; Solution: Tables should be in Pay Per Request Mode or be in provisioned mode with auto scaling. 
 
 ### DynamoDB.2: DynamoDB tables have point in time recovery enabled.
 
 ### DynamoDB.4: DynamoDB tables should provide a backup plan.
 
-### &nbsp;&nbsp;&nbsp;&nbsp; Solution: Utilizing tagging strategies for AWS Backup.
+### &nbsp;&nbsp;&nbsp;&nbsp; Solution: Utilising tagging strategies for AWS Backup.
 
 ## Other approaches taken
 
