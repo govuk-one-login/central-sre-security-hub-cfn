@@ -37,7 +37,6 @@ Parameters:
          - true
          - false
 
-
   TargetReadCapacity:
     Description: "The target number of reads consumed per second. Dynamo Naturally throttles reads on 40k per table and 80k per account."
     Type: Number
@@ -250,7 +249,6 @@ Resources:
         PredefinedMetricSpecification:
           PredefinedMetricType: DynamoDBReadCapacityUtilization
 
-
   #DynamoDB.1 - If in provisioned mode enable write autoscaling
   WriteCapacityScalableTarget:
     Condition: IsProvisionedThroughputEnabled
@@ -265,7 +263,6 @@ Resources:
       RoleARN: !GetAtt ScalingRole.Arn
       ScalableDimension: dynamodb:table:WriteCapacityUnits
       ServiceNamespace: dynamodb
-
 
   WriteScalingPolicy:
     Condition: IsProvisionedThroughputEnabled
@@ -315,6 +312,19 @@ Resources:
                   - "cloudwatch:SetAlarmState"
                   - "cloudwatch:DeleteAlarms"
                 Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/dynamo/template.yaml"
 
 Outputs:
   TableName:
