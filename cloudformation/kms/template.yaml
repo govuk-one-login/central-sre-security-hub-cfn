@@ -1,0 +1,288 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'central-sre-security-hub-cfn kms-key template version: v0.0.1
+ Enforces: security hub rule KEYMGMT02 
+ Managed by: central-sre'
+
+Parameters:
+  Environment:
+    Description: "The name of the environment to deploy to"
+    Type: "String"
+    AllowedValues:
+      - "build"
+      - "dev" # For testing purposes only
+      - "staging"
+      - "integration"
+      - "production"
+    Default: "build"
+ 
+  AllowedAccounts:
+    Description: 'List of accounts that can read the KMS Key'
+    Type: CommaDelimitedList
+    Default: ''
+ 
+  AlertTopicARN:
+    Description: 'ARN of the SNS topic'
+    Type: String
+    Default: ''
+    
+ 
+  Service:
+    Description: 'Which AWS service is allowed to use this CMK (upper-case names define use-cases)'
+    Type: String
+    AllowedValues:
+    - 'ALL_SERVICES'
+    - 'S3_PUBLIC_ACCESS'
+    - 'ROUTE53_DNSSEC'
+    - 'CLOUDTRAIL'
+    - 'CLOUDFRONT'
+    - lambda
+    - rds
+    - secretsmanager
+    - ses
+    - s3
+    - sqs
+    - cloudtrail
+    Default: ALL_SERVICES
+ 
+  KeySpec:
+    Description: 'Specify the type of the CMK.'
+    Type: String
+    AllowedValues:
+    - SYMMETRIC_DEFAULT
+    - RSA_2048
+    - RSA_3072
+    - RSA_4096
+    - ECC_NIST_P256
+    - ECC_NIST_P384
+    - ECC_NIST_P521
+    - ECC_SECG_P256K1
+    Default: SYMMETRIC_DEFAULT
+ 
+  KeyUsage:
+    Description: 'Which cryptographic operations should the CMK support?'
+    Type: String
+    AllowedValues:
+    - ENCRYPT_DECRYPT
+    - SIGN_VERIFY
+    Default: ENCRYPT_DECRYPT
+  
+
+  KMSDeletionPolicy:
+    Description: 'Attribute you can preserve, and in some cases, backup a resource when its stack is deleted' 
+    Type: String
+    AllowedValues:
+    - Retain
+    - Delete
+    Default: Retain
+  
+  KMSUpdateReplacePolicy:
+    Description: 'Attribute to retain or, in some cases, backup the existing physical instance of a resource when it is replaced during a stack update operation.' 
+    Type: String
+    AllowedValues:
+    - Retain
+    - Delete
+    Default: Retain
+
+Conditions:
+      HasServiceAllServices: !Equals [!Ref Service, 'ALL_SERVICES']
+      HasServiceS3PublicAccess: !Equals [!Ref Service, 'S3_PUBLIC_ACCESS']
+      HasServiceRoute53Dnssec: !Or [!Equals [!Ref Service, 'ROUTE53_DNSSEC'], !Equals [!Ref Service, 'dnssec-route53']]
+      HasServiceCloudFront: !Equals [!Ref Service, 'CLOUDFRONT']
+      HasServiceCloudTrail: !Equals [!Ref Service, 'CLOUDTRAIL']
+      HasService: !Not [!Or [!Condition HasServiceAllServices, !Condition HasServiceS3PublicAccess, !Condition HasServiceRoute53Dnssec, !Condition HasServiceCloudFront, !Condition HasServiceCloudTrail]]
+      HasAlertTopic: !Not [!Equals [!Ref AlertTopicARN, '']]
+      AllowedAccountsNotEmpty: !Not [!Equals [!Join ["", !Ref AllowedAccounts], ""]]      
+
+Resources:
+  Key:
+    DeletionPolicy: !Ref KMSDeletionPolicy
+    UpdateReplacePolicy: !Ref KMSUpdateReplacePolicy
+    Type: 'AWS::KMS::Key'
+    Properties:
+      EnableKeyRotation: true
+      KeySpec: !Ref KeySpec
+      KeyUsage: !Ref KeyUsage
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Product
+          Value: GOV.UK
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "kmskey"
+        - Key: Service
+          Value: "sre"
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/kms/template.yaml"
+
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+          Action: 'kms:*'
+          Resource: '*'
+        - !If
+          - HasService
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+            - 'kms:Encrypt'
+            - 'kms:Decrypt'
+            - 'kms:ReEncrypt*'
+            - 'kms:GenerateDataKey*'
+            - 'kms:CreateGrant'
+            - 'kms:ListGrants'
+            - 'kms:DescribeKey'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'kms:CallerAccount': !Ref 'AWS::AccountId'
+                'kms:ViaService': !Sub '${Service}.${AWS::Region}.amazonaws.com'
+          - !Ref 'AWS::NoValue'
+        - !If
+          - HasServiceAllServices
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+            - 'kms:Encrypt'
+            - 'kms:Decrypt'
+            - 'kms:ReEncrypt*'
+            - 'kms:GenerateDataKey*'
+            - 'kms:CreateGrant'
+            - 'kms:ListGrants'
+            - 'kms:DescribeKey'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'kms:CallerAccount': !Ref 'AWS::AccountId'
+          - !Ref 'AWS::NoValue'
+        - !If
+          - HasServiceS3PublicAccess
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+            - 'kms:Decrypt'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'kms:ViaService': !Sub 's3.${AWS::Region}.amazonaws.com'
+          - !Ref 'AWS::NoValue'
+        - !If
+          - HasServiceRoute53Dnssec
+          - Effect: Allow
+            Principal:
+              Service: 'dnssec-route53.amazonaws.com'
+            Action:
+            - 'kms:DescribeKey'
+            - 'kms:GetPublicKey'
+            - 'kms:Sign'
+            Resource: '*'
+          - !Ref 'AWS::NoValue'
+        - !If
+          - HasServiceRoute53Dnssec
+          - Effect: Allow
+            Principal:
+              Service: 'dnssec-route53.amazonaws.com'
+            Action:
+            - 'kms:CreateGrant'
+            Resource: '*'
+            Condition:
+              Bool:
+                'kms:GrantIsForAWSResource': true
+          - !Ref 'AWS::NoValue'
+        - !If
+          - HasServiceCloudTrail
+          - Effect: Allow # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/create-kms-key-policy-for-cloudtrail.html#create-kms-key-policy-for-cloudtrail-encrypt
+            Principal:
+              Service: 'cloudtrail.amazonaws.com'
+            Action:
+            - 'kms:GenerateDataKey*'
+            Resource: '*'
+            Condition:
+              StringLike:
+                'kms:EncryptionContext:aws:cloudtrail:arn': !Sub 'arn:aws:cloudtrail:*:${AWS::AccountId}:trail/*'
+          - !Ref 'AWS::NoValue'
+        - !If
+          - HasServiceCloudFront
+          - Effect: Allow # https://aws.amazon.com/blogs/networking-and-content-delivery/serving-sse-kms-encrypted-content-from-s3-using-cloudfront/
+            Principal:
+              Service: 'cloudfront.amazonaws.com'
+            Action:
+            - 'kms:Decrypt'
+            Resource: '*'
+            Condition:
+              StringLike:
+                'aws:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/*'
+          - !Ref 'AWS::NoValue'
+        - !If
+            - AllowedAccountsNotEmpty
+            - Effect: "Allow"
+              Principal:
+                AWS: !Ref AllowedAccounts
+              Action:
+                - "kms:DescribeKey"
+                - "kms:GetPublicKey"
+                - "kms:Verify"
+              Resource:
+                - "*"
+            - !Ref AWS::NoValue
+
+  KeyAlias:
+    DeletionPolicy: !Ref KMSDeletionPolicy
+    UpdateReplacePolicy: !Ref KMSUpdateReplacePolicy
+    Type: 'AWS::KMS::Alias'
+    Properties:
+      AliasName: !Sub 'alias/${AWS::StackName}'
+      TargetKeyId: !Ref Key
+
+  DeletionNotification:
+    Condition: HasAlertTopic
+    Type: 'AWS::Events::Rule'
+    Properties:
+      EventPattern:
+        source:
+        - 'aws.kms'
+        'detail-type':
+        - 'AWS API Call via CloudTrail'
+        resources:
+        - !GetAtt Key.Arn
+        detail:
+          eventSource:
+          - 'kms.amazonaws.com'
+          'eventName':
+          - ScheduleKeyDeletion
+          - DisableKey
+      State: ENABLED
+      Targets:
+      - Arn: !Ref AlertTopicARN
+        Id: rule
+
+
+Outputs:
+  TemplateID:
+    Description: 'kms-key template id.'
+    Value: 'security/kms-key'
+  TemplateVersion:
+    Description: 'kms-key template version.'
+    Value: '__VERSION__'
+  StackName:
+    Description: 'Stack name.'
+    Value: !Sub '${AWS::StackName}'
+  KeyId:
+    Description: 'Key id.'
+    Value: !Ref Key
+    Export:
+      Name: !Sub '${AWS::StackName}-KeyId'
+  KeyArn:
+    Description: 'Key ARN.'
+    Value: !GetAtt 'Key.Arn'
+    Export:
+      Name: !Sub '${AWS::StackName}-KeyArn'
