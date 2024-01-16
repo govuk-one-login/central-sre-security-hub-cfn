@@ -2,4 +2,4 @@
 Security Hub compliant CloudFormation templates 
 
 ## Licence
-[MIT License](LICENSE) .
+[MIT License](LICENSE) 
