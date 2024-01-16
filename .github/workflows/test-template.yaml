@@ -29,11 +29,6 @@ jobs:
       run: |
         cfn-lint cloudformation/secrets-manager/template.yaml
 
-     - name: Install AWS CLI
-       run: |
-         apt-get update
-         apt-get install -y awscli    
-
     - name: Validate AWS CloudFormation stack
       run: |
         aws cloudformation validate-template \
