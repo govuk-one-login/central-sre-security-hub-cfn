@@ -208,7 +208,7 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_IMAGE
       Tags:
-        - Key: Name
+        - Key: StackName
           Value: !Sub "${AWS::StackName}"
         - Key: Product
           Value: !Ref Product
@@ -315,7 +315,7 @@ Resources:
                   - "cloudwatch:DeleteAlarms"
                 Resource: "*"
       Tags:
-        - Key: Name
+        - Key: StackName
           Value: !Sub "${AWS::StackName}"
         - Key: Product
           Value: !Ref Product
