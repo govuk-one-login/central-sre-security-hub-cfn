@@ -18,7 +18,7 @@ Parameters:
     Type: String
 
   ContributorInsightsEnabled:
-    Description: "Do you want to enable Cloudwatch Contributor Insights?"
+    Description: "Do you want to enable Cloudwatch Contributor Insights? [true or false]"
     Default: false
     Type: String
     AllowedValues:
@@ -30,7 +30,7 @@ Parameters:
     Type: String
 
   ProvisionedThroughputEnabled:
-    Description: "Do you want to enable the database to be run in provisioned throughput mode?
+    Description: "Do you want to enable the database to be run in provisioned throughput mode? [true or false]
                   Dynamo Naturally throttles reads and writes above 40k capacity units / second per table and 80k capacity units / second per account. 
                   If you enable provisioned throughput please also configure target and minimum and maxium values for read, write autoscaling."
     Default: false
@@ -98,7 +98,7 @@ Parameters:
          - "B"
   
   SortKeyEnabled:
-    Description: "Would you like to add a second partion key as the sort key?"
+    Description: "Would you like to add a second partion key as the sort key? [true or false]"
     Default: false
     Type: String
     AllowedValues:
@@ -124,7 +124,7 @@ Parameters:
   TimeToLiveEnabled:
     Type: String
     Default: true
-    Description: "Do you want to enable time to live for this table?"
+    Description: "Do you want to enable time to live for this table? [true or false]"
     AllowedValues:
       - true
       - false
