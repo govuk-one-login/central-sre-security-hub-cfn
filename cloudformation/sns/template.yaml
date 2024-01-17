@@ -1,0 +1,243 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  central-sre-security-hub-cfn sns template version: v0.0.1
+  Enforces: security hub rule(s) 
+  - SNS01
+  - SNS02
+  Managed by: central-sre.
+  
+Parameters:
+  TopicName:
+    Description: The name of the SNS topic that will be deployed.
+    Default: "null"
+    Type: String
+  
+  FifoEnabled:
+    Description: "Do you want to enable FIFO (first in, first out ordering) mode for this topic? [true, false]"
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
+  
+  KMSKeyId:
+    Description: "It is mandatory to provide a KMS key ID to encrypt this topic at rest. This ID must exist in the account which you are deploying to."
+    Type: String
+
+  MessageRetention:
+    Description: "Number of days SNS retains messages. Can be between 1 - 365 days."
+    Default: 30
+    Type: Number
+    MinValue: 1
+    MaxValue: 365
+  
+  ContentBasedDeduplicationEnabled:
+    Description: "Do you want to enable Content based deduplication for this topic? [true, false]"
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
+
+  LoggingProtocol:
+    Description: "What logging protocol will be used?"
+    Default: "http/s"
+    Type: String
+    AllowedValues:
+         - "http/s"
+         - "sqs"
+         - "lambda"
+         - "firehose"
+         - "application"
+
+  SuccessfulLoggingPercent:
+    Description: "How often do you want to log to cloudwatch your successful message delivery?"
+    Type: String
+    Default: "100"
+    AllowedPattern: "[0-9]+"
+    ConstraintDescription: "Please enter a valid number between 0 and 100."
+    MaxLength: 3
+    MinLength: 1
+
+  HttpSubscriptionEnabled:
+    Description: "Do you want to enable a http subscription endpoint? [true, false]"
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
+  # HttpsSubscriptionEnabled:
+
+  # EmailSubscriptionEnabled:
+
+  # SmsSubscriptionEnabled:
+
+  # SqsSubscriptionEnabled:
+
+  # SecondSqsSubscriptionEnabled:
+
+  # ApplicationSubscriptionEnabled:
+
+  # LambdaSubsciptionEnabled:
+
+  # FirehoseSubscriptionEnabled:
+
+  HttpSubscriptionEndpoint:
+    Description: "What is the http endpoint you want to this topic to subscribe to? (must be like http://)"
+    Type: String
+    AllowedPattern: "^(http):\\/\\/[a-zA-Z0-9.-]+(?:\\:[0-9]+)?(?:[\\/\\w.-]*)*\\/?$"
+    ConstraintDescription: "Please enter a valid HTTP endpoint URL."
+
+  # HttpsSubscriptionEndpoint:
+    # Description: "What is the https endpoint you want to this topic to subscribe to? (must be like https://)"
+    # Type: String
+    # AllowedPattern: "^(https):\\/\\/[a-zA-Z0-9.-]+(?:\\:[0-9]+)?(?:[\\/\\w.-]*)*\\/?$"
+    # ConstraintDescription: "Please enter a valid HTTPS endpoint URL."
+
+  # EmailSubscriptionEndpoint:
+
+  # SmsSubscriptionEndpoint:
+
+  # SqsSubscriptionEndpoint:
+
+  # SecondSqsSubscriptionEndpoint:
+
+  # ApplicationSubscriptionEndpoint:
+
+  # LambdaSubsciptionEndpoint:
+
+  # FirehoseSubscriptionEndpoint:
+  
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Environment:
+    Type: String
+    Default: dev
+    Description: "Tag the environment to all your resources."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+Conditions:
+  HasTopicName: !Not [!Equals ["null", !Ref TopicName]]
+  HasHttpEndpoint: !Equals [true, !Ref HttpSubscriptionEnabled]
+
+
+Resources:
+  SNSTopic:
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Type: AWS::SNS::Topic
+    Properties:
+      ArchivePolicy: !Ref MessageRetention
+      ContentBasedDeduplication: !Ref ContentBasedDeduplicationEnabled
+      #SNS.2
+      DeliveryStatusLogging: 
+        - Protocol: !Ref LoggingProtocol
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.RoleArn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.RoleArn
+          SuccessFeedbackSampleRate: !Ref SuccessfulLoggingPercent
+      DisplayName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
+      FifoTopic: !Ref FifoEnabled
+      KmsMasterKeyId: !Ref KMSKeyId
+      Subscription: !If 
+        - HasHttpEndpoint
+        -
+          - Endpoint: !Ref HttpSubscriptionEndpoint
+            Protocol: http
+        - !Ref "AWS::NoValue"
+
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/sns/template.yaml"
+      TopicName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
+      TracingConfig: String
+
+  TopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument: Json
+      Topics: 
+        - !GetAtt SNSTopic.TopicArn
+    
+  LoggingRole: 
+    Type: AWS::IAM::Role
+    Properties:
+
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups:
+      - Label:
+          default: "Mandatory Tags"
+        Parameters: 
+          - Product
+          - System
+          - Environment
+          - Owner
+      - Label:
+          default: "Http Subscription Configuration"
+        Parameters: 
+          - HttpSubscriptionEnabled
+          - HttpSubscriptionEndpoint
+      # - Label:
+      #     default: "Https Subscription Configuration"
+      #   Parameters: 
+      #     - HttpSubscriptionEnabled
+      #     - HttpSubscriptionEndpoint
+      # - Label:
+      #     default: "Email Subscription Configuration"
+      #   Parameters: 
+      #     - HttpSubscriptionEnabled
+      #     - HttpSubscriptionEndpoint
+      # - Label:
+      #     default: "SQS Subscription Configuration"
+      #   Parameters: 
+      #     - HttpSubscriptionEnabled
+      #     - HttpSubscriptionEndpoint
+      # - Label:
+      #     default: "SQS Second Subscription Configuration"
+      #   Parameters: 
+      #     - HttpSubscriptionEnabled
+      #     - HttpSubscriptionEndpoint
+      # - Label:
+      #     default: "SNS Subscription Configuration"
+      #   Parameters: 
+      #     - HttpSubscriptionEnabled
+      #     - HttpSubscriptionEndpoint
+      # - Label:
+      #     default: "Application Subscription Configuration"
+      #   Parameters: 
+      #     - HttpSubscriptionEnabled
+      #     - HttpSubscriptionEndpoint
+      # - Label:
+      #     default: "Lambda Subscription Configuration"
+      #   Parameters: 
+      #     - HttpSubscriptionEnabled
+      #     - HttpSubscriptionEndpoint
+      # - Label:
+      #     default: "Firehose Subscription Configuration"
+      #   Parameters: 
+      #     - HttpSubscriptionEnabled
+      #     - HttpSubscriptionEndpoint
+  
+  
