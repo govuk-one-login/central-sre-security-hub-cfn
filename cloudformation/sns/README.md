@@ -17,15 +17,15 @@ DynamoDB tables have point in time recovery enabled.
 ---
 ## Notes
 
-- Supports a single subscription for each of the following endpoint types:
-    - http/https
-    - email
-    - SNS
-    - SMS
-    - Application
-    - Lambda
-    - Firehose
+- Supports many subscriptions
 
-- Supports up to two subscriptions for:
-    - sqs
+- Amazon SNS will vend X-Ray segment data to topic owner account if the sampled flag in the tracing header is true.
+
+## Approach
+
+- subscriptions can be defined inside the lambdas or other subscription types. For this solution the user inputs subscribers to determine the SNS Topic Policy to provide extra secrity for what can publish or subscribe to a topic.
+
+- No support for http/(s) yet as difficult to configure into the topic policy
+
+- Support for publishers needs to be optional not manitory
 

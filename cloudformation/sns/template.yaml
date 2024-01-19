@@ -39,17 +39,6 @@ Parameters:
        - true
        - false
 
-  LoggingProtocol:
-    Description: "What logging protocol will be used?"
-    Default: "http/s"
-    Type: String
-    AllowedValues:
-         - "http/s"
-         - "sqs"
-         - "lambda"
-         - "firehose"
-         - "application"
-
   SuccessfulLoggingPercent:
     Description: "How often do you want to log to cloudwatch your successful message delivery?"
     Type: String
@@ -59,54 +48,37 @@ Parameters:
     MaxLength: 3
     MinLength: 1
 
-  HttpSubscriptionEnabled:
-    Description: "Do you want to enable a http subscription endpoint? [true, false]"
-    Default: false
+  # PublisherType:
+  #   Description: "What aws resource type do you want as your publisher?"
+  #   Default: "lambda"
+  #   Type: String
+  #   AllowedValues:
+  #        - "sqs"
+  #        - "lambda"
+  #        - "firehose"
+  #        - "application"
+
+  # PublisherArn:
+  #   Description: What is the arn of the resource that you want to publish to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
+  #   Type: String
+  #   AllowedPattern: "^arn:aws:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]+:[0-9]+:[a-zA-Z0-9-_/]+"
+  #   ConstraintDescription: Please enter a valid AWS ARN.
+
+  SubscriberType:
+    Description: "What aws resource type do you want as your subscriber?"
+    Default: "lambda"
     Type: String
     AllowedValues:
-       - true
-       - false
-  # HttpsSubscriptionEnabled:
+         - "sqs"
+         - "lambda"
+         - "firehose"
+         - "application"
 
-  # EmailSubscriptionEnabled:
-
-  # SmsSubscriptionEnabled:
-
-  # SqsSubscriptionEnabled:
-
-  # SecondSqsSubscriptionEnabled:
-
-  # ApplicationSubscriptionEnabled:
-
-  # LambdaSubsciptionEnabled:
-
-  # FirehoseSubscriptionEnabled:
-
-  HttpSubscriptionEndpoint:
-    Description: "What is the http endpoint you want to this topic to subscribe to? (must be like http://)"
+  SubscriberArn:
+    Description: What is the arn of the resource that you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
     Type: String
-    AllowedPattern: "^(http):\\/\\/[a-zA-Z0-9.-]+(?:\\:[0-9]+)?(?:[\\/\\w.-]*)*\\/?$"
-    ConstraintDescription: "Please enter a valid HTTP endpoint URL."
-
-  # HttpsSubscriptionEndpoint:
-    # Description: "What is the https endpoint you want to this topic to subscribe to? (must be like https://)"
-    # Type: String
-    # AllowedPattern: "^(https):\\/\\/[a-zA-Z0-9.-]+(?:\\:[0-9]+)?(?:[\\/\\w.-]*)*\\/?$"
-    # ConstraintDescription: "Please enter a valid HTTPS endpoint URL."
-
-  # EmailSubscriptionEndpoint:
-
-  # SmsSubscriptionEndpoint:
-
-  # SqsSubscriptionEndpoint:
-
-  # SecondSqsSubscriptionEndpoint:
-
-  # ApplicationSubscriptionEndpoint:
-
-  # LambdaSubsciptionEndpoint:
-
-  # FirehoseSubscriptionEndpoint:
+    AllowedPattern: "^arn:(aws[a-zA-Z-]*)?:[a-zA-Z0-9-]+:[a-z]{2}((-gov)|(-iso(b?)))?-[a-z]+-\d{1}:\d{12}:[a-zA-Z0-9-_]+"
+    ConstraintDescription: Please enter a valid AWS ARN.
   
   Product:
     Type: String
@@ -130,8 +102,6 @@ Parameters:
 
 Conditions:
   HasTopicName: !Not [!Equals ["null", !Ref TopicName]]
-  HasHttpEndpoint: !Equals [true, !Ref HttpSubscriptionEnabled]
-
 
 Resources:
   SNSTopic:
@@ -143,20 +113,13 @@ Resources:
       ContentBasedDeduplication: !Ref ContentBasedDeduplicationEnabled
       #SNS.2
       DeliveryStatusLogging: 
-        - Protocol: !Ref LoggingProtocol
-          FailureFeedbackRoleArn: !GetAtt LoggingRole.RoleArn
-          SuccessFeedbackRoleArn: !GetAtt LoggingRole.RoleArn
+        - Protocol: !Ref SubscriberType
+          # FailureFeedbackRoleArn: !GetAtt LoggingRole.RoleArn
+          # SuccessFeedbackRoleArn: !GetAtt LoggingRole.RoleArn
           SuccessFeedbackSampleRate: !Ref SuccessfulLoggingPercent
       DisplayName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
       FifoTopic: !Ref FifoEnabled
       KmsMasterKeyId: !Ref KMSKeyId
-      Subscription: !If 
-        - HasHttpEndpoint
-        -
-          - Endpoint: !Ref HttpSubscriptionEndpoint
-            Protocol: http
-        - !Ref "AWS::NoValue"
-
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"
@@ -171,18 +134,74 @@ Resources:
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/sns/template.yaml"
       TopicName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
-      TracingConfig: String
+      TracingConfig: Active
 
-  TopicPolicy:
+  # PublishPolicy:
+  #   Type: AWS::SNS::TopicPolicy
+  #   Properties:
+  #     PolicyDocument:
+  #       Id: !Sub "${SNSTopic}-publish-policy"
+  #       Version: '2012-10-17'
+  #       Statement:
+  #       - Effect: Allow
+  #         Principal:
+  #           Service: !Sub "${PublisherType}.amazonaws.com"
+  #         Action: sns:Publish
+  #         Resource: !Ref SNSTopic
+  #         Condition:
+  #             ArnEquals:
+  #               aws:SourceArn: !Ref PublisherArn
+  #     Topics: 
+  #       - !Ref SNSTopic
+
+  SubscribePolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:
-      PolicyDocument: Json
+      PolicyDocument:
+        Id: !Sub "${SNSTopic}-subscribe-policy"
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Sub "${SubscriberType}.amazonaws.com"
+            Action: "sns:Subscribe"
+            Resource: !Ref SNSTopic
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref SubscriberArn
       Topics: 
-        - !GetAtt SNSTopic.TopicArn
-    
+        - !Ref SNSTopic
+
   LoggingRole: 
     Type: AWS::IAM::Role
     Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "sns.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - 
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - 
+              Effect: Allow
+              Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:PutMetricFilter
+              - logs:PutRetentionPolicy
+              Resource:
+              - "*"
 
 Metadata: 
   AWS::CloudFormation::Interface: 
@@ -195,49 +214,13 @@ Metadata:
           - Environment
           - Owner
       - Label:
-          default: "Http Subscription Configuration"
+          default: "Subscription Configuration"
         Parameters: 
-          - HttpSubscriptionEnabled
-          - HttpSubscriptionEndpoint
+          - SubscriberType
+          - SubscriberArn
       # - Label:
-      #     default: "Https Subscription Configuration"
+      #     default: "Publisher Configuration"
       #   Parameters: 
-      #     - HttpSubscriptionEnabled
-      #     - HttpSubscriptionEndpoint
-      # - Label:
-      #     default: "Email Subscription Configuration"
-      #   Parameters: 
-      #     - HttpSubscriptionEnabled
-      #     - HttpSubscriptionEndpoint
-      # - Label:
-      #     default: "SQS Subscription Configuration"
-      #   Parameters: 
-      #     - HttpSubscriptionEnabled
-      #     - HttpSubscriptionEndpoint
-      # - Label:
-      #     default: "SQS Second Subscription Configuration"
-      #   Parameters: 
-      #     - HttpSubscriptionEnabled
-      #     - HttpSubscriptionEndpoint
-      # - Label:
-      #     default: "SNS Subscription Configuration"
-      #   Parameters: 
-      #     - HttpSubscriptionEnabled
-      #     - HttpSubscriptionEndpoint
-      # - Label:
-      #     default: "Application Subscription Configuration"
-      #   Parameters: 
-      #     - HttpSubscriptionEnabled
-      #     - HttpSubscriptionEndpoint
-      # - Label:
-      #     default: "Lambda Subscription Configuration"
-      #   Parameters: 
-      #     - HttpSubscriptionEnabled
-      #     - HttpSubscriptionEndpoint
-      # - Label:
-      #     default: "Firehose Subscription Configuration"
-      #   Parameters: 
-      #     - HttpSubscriptionEnabled
-      #     - HttpSubscriptionEndpoint
-  
+      #     - PublisherType
+      #     - PublisherArn
   
