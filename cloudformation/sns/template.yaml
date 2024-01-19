@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: 'AWS::LanguageExtensions'
 Description: >
   central-sre-security-hub-cfn sns template version: v0.0.1
   Enforces: security hub rule(s) 
@@ -27,9 +28,7 @@ Parameters:
   MessageRetention:
     Description: "Number of days SNS retains messages. Can be between 1 - 365 days."
     Default: 30
-    Type: Number
-    MinValue: 1
-    MaxValue: 365
+    Type: String
   
   ContentBasedDeduplicationEnabled:
     Description: "Do you want to enable Content based deduplication for this topic? [true, false]"
@@ -77,8 +76,17 @@ Parameters:
   SubscriberArn:
     Description: What is the arn of the resource that you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
     Type: String
-    AllowedPattern: "^arn:(aws[a-zA-Z-]*)?:[a-zA-Z0-9-]+:[a-z]{2}((-gov)|(-iso(b?)))?-[a-z]+-\d{1}:\d{12}:[a-zA-Z0-9-_]+"
-    ConstraintDescription: Please enter a valid AWS ARN.
+    # AllowedPattern: "^arn:(aws[a-zA-Z-]*)?:[a-zA-Z0-9-]+:[a-z]{2}((-gov)|(-iso(b?)))?-[a-z]+-\d{1}:\d{12}:[a-zA-Z0-9-_]+"
+    # ConstraintDescription: Please enter a valid AWS ARN.
+
+  XrayActiveTracing:
+    Description: "Would you like to enable X-Ray active tracing? (Active or PassThrough)"
+    Default: "PassThrough"
+    Type: String
+    ConstraintDescription: "Valid options are Active and PassThrough"
+    AllowedValues:
+         - "PassThrough"
+         - "Active"
   
   Product:
     Type: String
@@ -109,7 +117,22 @@ Resources:
     UpdateReplacePolicy: Delete
     Type: AWS::SNS::Topic
     Properties:
-      ArchivePolicy: !Ref MessageRetention
+      ArchivePolicy: 
+        Fn::ToJsonString:
+          ArchivePolicy: 
+            Fn::ToJsonString:
+              MessageRetentionPeriod: !Ref MessageRetention
+      
+      
+      # !Sub >-
+      #   {"ArchivePolicy": {"MessageRetentionPeriod": "${MessageRetention}"}}
+      # ArchivePolicy: 
+      #   !Sub |
+      #     {
+      #       "ArchivePolicy": {
+      #         "MessageRetentionPeriod": "${MessageRetention}"
+      #       }
+      #     }
       ContentBasedDeduplication: !Ref ContentBasedDeduplicationEnabled
       #SNS.2
       DeliveryStatusLogging: 
@@ -134,7 +157,7 @@ Resources:
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/sns/template.yaml"
       TopicName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
-      TracingConfig: Active
+      TracingConfig: !Ref XrayActiveTracing
 
   # PublishPolicy:
   #   Type: AWS::SNS::TopicPolicy
