@@ -1,5 +1,4 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: 'AWS::LanguageExtensions'
 Description: >
   central-sre-security-hub-cfn sns template version: v0.0.1
   Enforces: security hub rule(s) 
@@ -25,19 +24,6 @@ Parameters:
     Description: "It is mandatory to provide a KMS key ID to encrypt this topic at rest. This ID must exist in the account which you are deploying to."
     Type: String
 
-  MessageRetention:
-    Description: "Number of days SNS retains messages. Can be between 1 - 365 days."
-    Default: 30
-    Type: String
-  
-  ContentBasedDeduplicationEnabled:
-    Description: "Do you want to enable Content based deduplication for this topic? [true, false]"
-    Default: false
-    Type: String
-    AllowedValues:
-       - true
-       - false
-
   SuccessfulLoggingPercent:
     Description: "How often do you want to log to cloudwatch your successful message delivery?"
     Type: String
@@ -47,26 +33,43 @@ Parameters:
     MaxLength: 3
     MinLength: 1
 
-  # PublisherType:
-  #   Description: "What aws resource type do you want as your publisher?"
-  #   Default: "lambda"
-  #   Type: String
-  #   AllowedValues:
-  #        - "sqs"
-  #        - "lambda"
-  #        - "firehose"
-  #        - "application"
+  PublisherEnabled:
+    Description: "Do you want to enable a Publisher for this topic?"
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
 
-  # PublisherArn:
-  #   Description: What is the arn of the resource that you want to publish to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
-  #   Type: String
-  #   AllowedPattern: "^arn:aws:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]+:[0-9]+:[a-zA-Z0-9-_/]+"
-  #   ConstraintDescription: Please enter a valid AWS ARN.
+  PublisherType:
+    Description: "What aws resource type do you want as your publisher?"
+    Type: String
+    Default: "lambda"
+    AllowedValues:
+         - "sqs"
+         - "lambda"
+         - "firehose"
+         - "application"
+
+  PublisherArn:
+    Description: What is the arn of the resource that you want to publish to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
+    Type: String
+    Default: "arn:aws:service:eu-west-2:000000000000:name"
+    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-]+"
+    ConstraintDescription: Please enter a valid AWS ARN.
+
+  SubscriberEnabled:
+    Description: "Do you want to enable a Subscriber for this topic?"
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
 
   SubscriberType:
     Description: "What aws resource type do you want as your subscriber?"
-    Default: "lambda"
     Type: String
+    Default: "lambda"
     AllowedValues:
          - "sqs"
          - "lambda"
@@ -76,8 +79,9 @@ Parameters:
   SubscriberArn:
     Description: What is the arn of the resource that you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
     Type: String
-    # AllowedPattern: "^arn:(aws[a-zA-Z-]*)?:[a-zA-Z0-9-]+:[a-z]{2}((-gov)|(-iso(b?)))?-[a-z]+-\d{1}:\d{12}:[a-zA-Z0-9-_]+"
-    # ConstraintDescription: Please enter a valid AWS ARN.
+    Default: "arn:aws:service:eu-west-2:000000000000:name"
+    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-]+"
+    ConstraintDescription: Please enter a valid AWS ARN.
 
   XrayActiveTracing:
     Description: "Would you like to enable X-Ray active tracing? (Active or PassThrough)"
@@ -110,6 +114,9 @@ Parameters:
 
 Conditions:
   HasTopicName: !Not [!Equals ["null", !Ref TopicName]]
+  HasFifo: !Equals [true, !Ref FifoEnabled]
+  HasPublisher: !Equals [true, !Ref PublisherEnabled]
+  HasSubscriber: !Equals [true, !Ref SubscriberEnabled]
 
 Resources:
   SNSTopic:
@@ -117,31 +124,16 @@ Resources:
     UpdateReplacePolicy: Delete
     Type: AWS::SNS::Topic
     Properties:
-      ArchivePolicy: 
-        Fn::ToJsonString:
-          ArchivePolicy: 
-            Fn::ToJsonString:
-              MessageRetentionPeriod: !Ref MessageRetention
-      
-      
-      # !Sub >-
-      #   {"ArchivePolicy": {"MessageRetentionPeriod": "${MessageRetention}"}}
-      # ArchivePolicy: 
-      #   !Sub |
-      #     {
-      #       "ArchivePolicy": {
-      #         "MessageRetentionPeriod": "${MessageRetention}"
-      #       }
-      #     }
-      ContentBasedDeduplication: !Ref ContentBasedDeduplicationEnabled
+      FifoTopic: !Ref FifoEnabled
+      ContentBasedDeduplication: !If [HasFifo, true, !Ref "AWS::NoValue"]
       #SNS.2
       DeliveryStatusLogging: 
         - Protocol: !Ref SubscriberType
-          # FailureFeedbackRoleArn: !GetAtt LoggingRole.RoleArn
-          # SuccessFeedbackRoleArn: !GetAtt LoggingRole.RoleArn
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
           SuccessFeedbackSampleRate: !Ref SuccessfulLoggingPercent
       DisplayName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
-      FifoTopic: !Ref FifoEnabled
+      
       KmsMasterKeyId: !Ref KMSKeyId
       Tags:
         - Key: StackName
@@ -159,25 +151,27 @@ Resources:
       TopicName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
       TracingConfig: !Ref XrayActiveTracing
 
-  # PublishPolicy:
-  #   Type: AWS::SNS::TopicPolicy
-  #   Properties:
-  #     PolicyDocument:
-  #       Id: !Sub "${SNSTopic}-publish-policy"
-  #       Version: '2012-10-17'
-  #       Statement:
-  #       - Effect: Allow
-  #         Principal:
-  #           Service: !Sub "${PublisherType}.amazonaws.com"
-  #         Action: sns:Publish
-  #         Resource: !Ref SNSTopic
-  #         Condition:
-  #             ArnEquals:
-  #               aws:SourceArn: !Ref PublisherArn
-  #     Topics: 
-  #       - !Ref SNSTopic
+  PublishPolicy:
+    Condition: HasPublisher
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Id: !Sub "${SNSTopic}-publish-policy"
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: !Sub "${PublisherType}.amazonaws.com"
+          Action: sns:Publish
+          Resource: !Ref SNSTopic
+          Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref PublisherArn
+      Topics: 
+        - !Ref SNSTopic
 
   SubscribePolicy:
+    Condition: HasSubscriber
     Type: AWS::SNS::TopicPolicy
     Properties:
       PolicyDocument:
@@ -237,13 +231,18 @@ Metadata:
           - Environment
           - Owner
       - Label:
+          default: "Fifo Configuration"
+        Parameters:
+          - FifoEnabled
+      - Label:
           default: "Subscription Configuration"
         Parameters: 
+          - SubscriberEnabled
           - SubscriberType
           - SubscriberArn
-      # - Label:
-      #     default: "Publisher Configuration"
-      #   Parameters: 
-      #     - PublisherType
-      #     - PublisherArn
-  
+      - Label:
+          default: "Publisher Configuration"
+        Parameters: 
+          - PublisherEnabled
+          - PublisherType
+          - PublisherArn
