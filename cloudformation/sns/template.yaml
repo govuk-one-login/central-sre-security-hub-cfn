@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
-  central-sre-security-hub-cfn sns template version: v0.0.1
+  central-sre-security-hub-cfn sns template
   Enforces: security hub rule(s) 
   - SNS01
   - SNS02
@@ -8,8 +8,7 @@ Description: >
   
 Parameters:
   TopicName:
-    Description: The name of the SNS topic that will be deployed.
-    Default: "null"
+    Description: "The name of the SNS topic that will be deployed."
     Type: String
   
   FifoEnabled:
@@ -26,12 +25,11 @@ Parameters:
 
   SuccessfulLoggingPercent:
     Description: "How often do you want to log to cloudwatch your successful message delivery?"
-    Type: String
+    Type: Number
     Default: "100"
-    AllowedPattern: "[0-9]+"
     ConstraintDescription: "Please enter a valid number between 0 and 100."
-    MaxLength: 3
-    MinLength: 1
+    MinValue: 0
+    MaxValue: 100
 
   PublisherEnabled:
     Description: "Do you want to enable a Publisher for this topic?"
@@ -55,7 +53,7 @@ Parameters:
     Description: What is the arn of the resource that you want to publish to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
     Type: String
     Default: "arn:aws:service:eu-west-2:000000000000:name"
-    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-]+"
+    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-:]+"
     ConstraintDescription: Please enter a valid AWS ARN.
 
   SubscriberEnabled:
@@ -80,7 +78,7 @@ Parameters:
     Description: What is the arn of the resource that you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
     Type: String
     Default: "arn:aws:service:eu-west-2:000000000000:name"
-    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-]+"
+    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-:]+"
     ConstraintDescription: Please enter a valid AWS ARN.
 
   XrayActiveTracing:
@@ -113,7 +111,6 @@ Parameters:
     Description: "Tag all your resources with the team name."
 
 Conditions:
-  HasTopicName: !Not [!Equals ["null", !Ref TopicName]]
   HasFifo: !Equals [true, !Ref FifoEnabled]
   HasPublisher: !Equals [true, !Ref PublisherEnabled]
   HasSubscriber: !Equals [true, !Ref SubscriberEnabled]
@@ -131,10 +128,12 @@ Resources:
         - Protocol: !Ref SubscriberType
           FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
           SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
-          SuccessFeedbackSampleRate: !Ref SuccessfulLoggingPercent
-      DisplayName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
-      
+          SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
+      DisplayName: !If [HasFifo, !Sub "${TopicName}-topic.fifo" , !Ref TopicName]
+      #SNS.1
       KmsMasterKeyId: !Ref KMSKeyId
+      TopicName: !If [HasFifo, !Sub "${TopicName}-topic.fifo" , !Ref TopicName]
+      TracingConfig: !Ref XrayActiveTracing
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"
@@ -148,8 +147,6 @@ Resources:
           Value: !Ref Owner
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/sns/template.yaml"
-      TopicName: !If [HasTopicName,!Ref TopicName, !Sub "${AWS::StackName}-topic"]
-      TracingConfig: !Ref XrayActiveTracing
 
   PublishPolicy:
     Condition: HasPublisher
@@ -219,10 +216,27 @@ Resources:
               - logs:PutRetentionPolicy
               Resource:
               - "*"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/dynamo/template.yaml"
 
 Metadata: 
   AWS::CloudFormation::Interface: 
     ParameterGroups:
+      - Label:
+          default: "Topic Name"
+        Parameters: 
+          - TopicName
       - Label:
           default: "Mandatory Tags"
         Parameters: 
