@@ -32,4 +32,4 @@ jobs:
     - name: Validate AWS CloudFormation stack
       run: |
         aws cloudformation validate-template \
-          --template-body cloudformation/secrets-manager/template.yaml
+          --template-body file://cloudformation/secrets-manager/template.yaml
