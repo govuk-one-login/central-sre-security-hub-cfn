@@ -19,12 +19,28 @@ Parameters:
        - true
        - false
 
-  PublisherArns:
-    Description: What is the list of arns of the publisher that you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
+  CrossAccountPublishEnabled:
+    Description: Do you want to publish cross account though a VPC endpoint to sns?
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
+
+  CrossAccountPublishVPCE:
+    Description: What is the vpc endpoint in your account that you want to publish to SNS?
     Type: String
 
-  SubscriberArns:
-    Description: What is the list of arns you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
+  CrossAccountSubscribeEnabled:
+    Description: Do you want to subscribe cross account from sns to a VPC endpoint?
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
+
+  CrossAccountSubscribeVPCE:
+    Description: What is the vpc endpoint in your account that you want to subscribe to SNS?
     Type: String
   
   KMSKeyId:
@@ -70,6 +86,10 @@ Parameters:
 
 Conditions:
   HasFifo: !Equals [true, !Ref FifoEnabled]
+  HasCrossAccount: !Or [!Equals [true, !Ref CrossAccountPublishEnabled], !Equals [true, !Ref CrossAccountSubscribeEnabled]]
+  HasCrossAccountPublish: !Equals [true, !Ref CrossAccountPublishEnabled]
+  HasCrossAccountSubscribe: !Equals [true, !Ref CrossAccountSubscribeEnabled]
+  HasCrossAccountPublishAndSubscribe: !And [!Condition HasCrossAccountPublish, !Condition HasCrossAccountSubscribe]
 
 Resources:
   SNSTopic:
@@ -117,32 +137,61 @@ Resources:
           Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/sns/template.yaml"
   
   TopicPolicy:
+    Condition: HasCrossAccount
     Type: AWS::SNS::TopicPolicy
     Properties:
       PolicyDocument:
-        Id: !Sub "${SNSTopic}-policy"
-        Version: '2012-10-17'
-        Statement:
-        - Sid: "Publish-statement"
-          Effect: Allow
-          Principal: 
-            AWS: "*"
-          Action: 
-            - sns:Publish
-          Resource: !Ref SNSTopic
-          Condition:
-            ArnEquals:
-              aws:SourceArn: !Ref PublisherArns
-        - Sid: "Subscribe-statement"
-          Effect: Allow
-          Principal: 
-            AWS: "*"
-          Action: 
-            - sns:Subscribe
-          Resource: !Ref SNSTopic
-          Condition:
-            ArnEquals:
-              aws:SourceArn: !Ref SubscriberArns
+        - !If
+          - HasCrossAccountPublishAndSubscribe
+          - Id: !Sub "${SNSTopic}-policy"
+            Version: '2012-10-17'
+            Statement:
+            - Sid: publish-deny-all
+              Effect: Deny
+              Principal: "*"
+              Action: SNS:Publish
+              Resource: !Ref SNSTopic
+              Condition:
+                StringNotEquals:
+                  aws:sourceVpce: !Ref CrossAccountPublishVPCE
+            - Sid: subscribe-deny-all
+              Effect: Deny
+              Principal: "*"
+              Action: SNS:Subscribe
+              Resource: !Ref SNSTopic
+              Condition:
+                StringNotEquals:
+                  aws:sourceVpce: !Ref CrossAccountSubscribeVPCE
+          - !Ref 'AWS::NoValue'
+        - !If
+          - HasCrossAccountPublish
+          - Id: !Sub "${SNSTopic}-policy"
+            Version: '2012-10-17'
+            Statement:
+            - Sid: publish-deny-all
+              Effect: Deny
+              Principal: "*"
+              Action: SNS:Publish
+              Resource: !Ref SNSTopic
+              Condition:
+                StringNotEquals:
+                  aws:sourceVpce: !Ref CrossAccountPublishVPCE
+          - !Ref 'AWS::NoValue'
+        - !If
+          - HasCrossAccountSubscribe
+          - Id: !Sub "${SNSTopic}-policy"
+            Version: '2012-10-17'
+            Statement:
+            - Sid: subscribe-deny-all
+              Effect: Deny
+              Principal: "*"
+              Action: SNS:Subscribe
+              Resource: !Ref SNSTopic
+              Condition:
+                StringNotEquals:
+                  aws:sourceVpce: !Ref CrossAccountSubscribeVPCE
+          - !Ref 'AWS::NoValue'
+
       Topics: 
         - !Ref SNSTopic
 
@@ -208,3 +257,13 @@ Metadata:
           default: "Fifo Configuration"
         Parameters:
           - FifoEnabled
+      - Label:
+          default: "Cross Account Publish"
+        Parameters:
+          - CrossAccountPublishEnabled
+          - CrossAccountPublishVPCE
+      - Label:
+          default: "Cross Account Subscribe"
+        Parameters:
+          - CrossAccountSubscribeEnabled
+          - CrossAccountSubscribeVPCE

@@ -117,7 +117,6 @@ Metadata:
       - Label:
           default: "Topic Information"
         Parameters: 
-          - TopicName
           - TopicArn
       - Label:
           default: "Mandatory Tags"
