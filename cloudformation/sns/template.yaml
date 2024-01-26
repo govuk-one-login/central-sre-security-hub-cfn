@@ -18,6 +18,14 @@ Parameters:
     AllowedValues:
        - true
        - false
+
+  PublisherArns:
+    Description: What is the list of arns of the publisher that you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
+    Type: String
+
+  SubscriberArns:
+    Description: What is the list of arns you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
+    Type: String
   
   KMSKeyId:
     Description: "It is mandatory to provide a KMS key ID to encrypt this topic at rest. This ID must exist in the account which you are deploying to."
@@ -30,56 +38,6 @@ Parameters:
     ConstraintDescription: "Please enter a valid number between 0 and 100."
     MinValue: 0
     MaxValue: 100
-
-  PublisherEnabled:
-    Description: "Do you want to enable a Publisher for this topic?"
-    Default: false
-    Type: String
-    AllowedValues:
-       - true
-       - false
-
-  PublisherType:
-    Description: "What aws resource type do you want as your publisher?"
-    Type: String
-    Default: "lambda"
-    AllowedValues:
-         - "sqs"
-         - "lambda"
-         - "firehose"
-         - "application"
-
-  PublisherArn:
-    Description: What is the arn of the resource that you want to publish to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
-    Type: String
-    Default: "arn:aws:service:eu-west-2:000000000000:name"
-    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-:]+"
-    ConstraintDescription: Please enter a valid AWS ARN.
-
-  SubscriberEnabled:
-    Description: "Do you want to enable a Subscriber for this topic?"
-    Default: false
-    Type: String
-    AllowedValues:
-       - true
-       - false
-
-  SubscriberType:
-    Description: "What aws resource type do you want as your subscriber?"
-    Type: String
-    Default: "lambda"
-    AllowedValues:
-         - "sqs"
-         - "lambda"
-         - "firehose"
-         - "application"
-
-  SubscriberArn:
-    Description: What is the arn of the resource that you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
-    Type: String
-    Default: "arn:aws:service:eu-west-2:000000000000:name"
-    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-:]+"
-    ConstraintDescription: Please enter a valid AWS ARN.
 
   XrayActiveTracing:
     Description: "Would you like to enable X-Ray active tracing? (Active or PassThrough)"
@@ -112,8 +70,6 @@ Parameters:
 
 Conditions:
   HasFifo: !Equals [true, !Ref FifoEnabled]
-  HasPublisher: !Equals [true, !Ref PublisherEnabled]
-  HasSubscriber: !Equals [true, !Ref SubscriberEnabled]
 
 Resources:
   SNSTopic:
@@ -123,13 +79,25 @@ Resources:
     Properties:
       FifoTopic: !Ref FifoEnabled
       ContentBasedDeduplication: !If [HasFifo, true, !Ref "AWS::NoValue"]
-      #SNS.2
+      #SNS.2 - Turn on Delivery status logging for all protocols by default
       DeliveryStatusLogging: 
-        - Protocol: !Ref SubscriberType
+        - Protocol: "sqs"
           FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
           SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
           SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
-      DisplayName: !If [HasFifo, !Sub "${TopicName}-topic.fifo" , !Ref TopicName]
+        - Protocol: "lambda"
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
+        - Protocol: "application"
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
+        - Protocol: "firehose"
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
+      DisplayName: !If [HasFifo, !Sub "${TopicName}.fifo" , !Ref TopicName]
       #SNS.1
       KmsMasterKeyId: !Ref KMSKeyId
       TopicName: !If [HasFifo, !Sub "${TopicName}-topic.fifo" , !Ref TopicName]
@@ -147,42 +115,34 @@ Resources:
           Value: !Ref Owner
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/sns/template.yaml"
-
-  PublishPolicy:
-    Condition: HasPublisher
+  
+  TopicPolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:
       PolicyDocument:
-        Id: !Sub "${SNSTopic}-publish-policy"
+        Id: !Sub "${SNSTopic}-policy"
         Version: '2012-10-17'
         Statement:
-        - Effect: Allow
-          Principal:
-            Service: !Sub "${PublisherType}.amazonaws.com"
-          Action: sns:Publish
+        - Sid: "Publish-statement"
+          Effect: Allow
+          Principal: 
+            AWS: "*"
+          Action: 
+            - sns:Publish
           Resource: !Ref SNSTopic
           Condition:
-              ArnEquals:
-                aws:SourceArn: !Ref PublisherArn
-      Topics: 
-        - !Ref SNSTopic
-
-  SubscribePolicy:
-    Condition: HasSubscriber
-    Type: AWS::SNS::TopicPolicy
-    Properties:
-      PolicyDocument:
-        Id: !Sub "${SNSTopic}-subscribe-policy"
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: !Sub "${SubscriberType}.amazonaws.com"
-            Action: "sns:Subscribe"
-            Resource: !Ref SNSTopic
-            Condition:
-              ArnEquals:
-                aws:SourceArn: !Ref SubscriberArn
+            ArnEquals:
+              aws:SourceArn: !Ref PublisherArns
+        - Sid: "Subscribe-statement"
+          Effect: Allow
+          Principal: 
+            AWS: "*"
+          Action: 
+            - sns:Subscribe
+          Resource: !Ref SNSTopic
+          Condition:
+            ArnEquals:
+              aws:SourceArn: !Ref SubscriberArns
       Topics: 
         - !Ref SNSTopic
 
@@ -248,15 +208,3 @@ Metadata:
           default: "Fifo Configuration"
         Parameters:
           - FifoEnabled
-      - Label:
-          default: "Subscription Configuration"
-        Parameters: 
-          - SubscriberEnabled
-          - SubscriberType
-          - SubscriberArn
-      - Label:
-          default: "Publisher Configuration"
-        Parameters: 
-          - PublisherEnabled
-          - PublisherType
-          - PublisherArn
