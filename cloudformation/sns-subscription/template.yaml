@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
-  central-sre-security-hub-cfn sns template
+  central-sre-security-hub-cfn sns subscription template
   Enforces: security hub rule(s) 
   - SNS01
   - SNS02
@@ -15,7 +15,7 @@ Parameters:
     ConstraintDescription: Please enter a valid AWS ARN.
 
   SubscriberType:
-    Description: "What aws resource type do you want as your subscriber?"
+    Description: "What AWS resource type do you want as your subscriber?"
     Type: String
     Default: "lambda"
     AllowedValues:

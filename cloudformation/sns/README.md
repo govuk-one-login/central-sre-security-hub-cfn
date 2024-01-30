@@ -17,14 +17,8 @@ Logging of delivery status should be enabled
 ---
 ## Notes
 
-- Supports cross account many subscription and many publisher
+- Cross account should be enabled by creating a topic policy to deny all traffic aside from dedicated VPC Endpoint (solution out of ticket scope) https://docs.aws.amazon.com/sns/latest/dg/sns-security-best-practices.html#consider-using-vpc-endpoints-access-sns 
 
 - Amazon SNS will send X-Ray segment data to topic owner account if the sampled flag in the tracing header is true.
-
-## Test Cases
-
-- test multiple subscribers
-
-- test attempted subscription from a resource not defined in the Topic policy to check it fails
 
 

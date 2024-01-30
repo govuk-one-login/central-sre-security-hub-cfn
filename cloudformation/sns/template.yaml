@@ -10,6 +10,8 @@ Parameters:
   TopicName:
     Description: "The name of the SNS topic that will be deployed."
     Type: String
+    MinLength: 1
+    MaxLength: 256
   
   FifoEnabled:
     Description: "Do you want to enable FIFO (first in, first out ordering) mode for this topic? [true, false]"
@@ -18,30 +20,6 @@ Parameters:
     AllowedValues:
        - true
        - false
-
-  CrossAccountPublishEnabled:
-    Description: Do you want to publish cross account though a VPC endpoint to sns?
-    Default: false
-    Type: String
-    AllowedValues:
-       - true
-       - false
-
-  CrossAccountPublishVPCE:
-    Description: What is the vpc endpoint in your account that you want to publish to SNS?
-    Type: String
-
-  CrossAccountSubscribeEnabled:
-    Description: Do you want to subscribe cross account from sns to a VPC endpoint?
-    Default: false
-    Type: String
-    AllowedValues:
-       - true
-       - false
-
-  CrossAccountSubscribeVPCE:
-    Description: What is the vpc endpoint in your account that you want to subscribe to SNS?
-    Type: String
   
   KMSKeyId:
     Description: "It is mandatory to provide a KMS key ID to encrypt this topic at rest. This ID must exist in the account which you are deploying to."
@@ -86,10 +64,6 @@ Parameters:
 
 Conditions:
   HasFifo: !Equals [true, !Ref FifoEnabled]
-  HasCrossAccount: !Or [!Equals [true, !Ref CrossAccountPublishEnabled], !Equals [true, !Ref CrossAccountSubscribeEnabled]]
-  HasCrossAccountPublish: !Equals [true, !Ref CrossAccountPublishEnabled]
-  HasCrossAccountSubscribe: !Equals [true, !Ref CrossAccountSubscribeEnabled]
-  HasCrossAccountPublishAndSubscribe: !And [!Condition HasCrossAccountPublish, !Condition HasCrossAccountSubscribe]
 
 Resources:
   SNSTopic:
@@ -135,65 +109,6 @@ Resources:
           Value: !Ref Owner
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/sns/template.yaml"
-  
-  TopicPolicy:
-    Condition: HasCrossAccount
-    Type: AWS::SNS::TopicPolicy
-    Properties:
-      PolicyDocument:
-        - !If
-          - HasCrossAccountPublishAndSubscribe
-          - Id: !Sub "${SNSTopic}-policy"
-            Version: '2012-10-17'
-            Statement:
-            - Sid: publish-deny-all
-              Effect: Deny
-              Principal: "*"
-              Action: SNS:Publish
-              Resource: !Ref SNSTopic
-              Condition:
-                StringNotEquals:
-                  aws:sourceVpce: !Ref CrossAccountPublishVPCE
-            - Sid: subscribe-deny-all
-              Effect: Deny
-              Principal: "*"
-              Action: SNS:Subscribe
-              Resource: !Ref SNSTopic
-              Condition:
-                StringNotEquals:
-                  aws:sourceVpce: !Ref CrossAccountSubscribeVPCE
-          - !Ref 'AWS::NoValue'
-        - !If
-          - HasCrossAccountPublish
-          - Id: !Sub "${SNSTopic}-policy"
-            Version: '2012-10-17'
-            Statement:
-            - Sid: publish-deny-all
-              Effect: Deny
-              Principal: "*"
-              Action: SNS:Publish
-              Resource: !Ref SNSTopic
-              Condition:
-                StringNotEquals:
-                  aws:sourceVpce: !Ref CrossAccountPublishVPCE
-          - !Ref 'AWS::NoValue'
-        - !If
-          - HasCrossAccountSubscribe
-          - Id: !Sub "${SNSTopic}-policy"
-            Version: '2012-10-17'
-            Statement:
-            - Sid: subscribe-deny-all
-              Effect: Deny
-              Principal: "*"
-              Action: SNS:Subscribe
-              Resource: !Ref SNSTopic
-              Condition:
-                StringNotEquals:
-                  aws:sourceVpce: !Ref CrossAccountSubscribeVPCE
-          - !Ref 'AWS::NoValue'
-
-      Topics: 
-        - !Ref SNSTopic
 
   LoggingRole: 
     Type: AWS::IAM::Role
@@ -215,8 +130,7 @@ Resources:
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
-            - 
-              Effect: Allow
+            - Effect: Allow
               Action:
               - logs:CreateLogGroup
               - logs:CreateLogStream
@@ -257,13 +171,3 @@ Metadata:
           default: "Fifo Configuration"
         Parameters:
           - FifoEnabled
-      - Label:
-          default: "Cross Account Publish"
-        Parameters:
-          - CrossAccountPublishEnabled
-          - CrossAccountPublishVPCE
-      - Label:
-          default: "Cross Account Subscribe"
-        Parameters:
-          - CrossAccountSubscribeEnabled
-          - CrossAccountSubscribeVPCE
