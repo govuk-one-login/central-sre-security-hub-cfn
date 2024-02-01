@@ -1,10 +1,16 @@
- GitHubActionsRole:
+
+
+Resources:
+  GitHubActionsRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
-            - Effect: "Allow"
-              Action: "sts:AssumeRoleWithWebIdentity"
-              Principal:
-                Federated: !ImportValue GitHubIdentityProviderArn
+          - Effect: "Allow"
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: !ImportValue GitHubIdentityProviderArn
+        Condition:
+          StringLike:
+            token.actions.githubusercontent.com:sub: repo:govuk-one-login/central-sre-security-hub-cfn:*
