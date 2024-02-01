@@ -10,7 +10,7 @@
                 "secretsmanager:PutSecretValue",
                 "secretsmanager:UpdateSecretVersionStage"
             ],
-            "Resource": "arn:aws:secretsmanager:eu-west-2:022831652856:secret:$SECRET_NAME-*"
+            "Resource": "arn:aws:secretsmanager:$REGION:$ACCOUNTID:secret:$SECRET_NAME-*"
         },
         {
             "Sid": "ListAndGenerate",
