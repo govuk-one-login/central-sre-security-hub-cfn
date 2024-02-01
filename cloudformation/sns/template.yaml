@@ -1,0 +1,173 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  central-sre-security-hub-cfn sns template
+  Enforces: security hub rule(s) 
+  - SNS01
+  - SNS02
+  Managed by: central-sre.
+  
+Parameters:
+  TopicName:
+    Description: "The name of the SNS topic that will be deployed."
+    Type: String
+    MinLength: 1
+    MaxLength: 256
+  
+  FifoEnabled:
+    Description: "Do you want to enable FIFO (first in, first out ordering) mode for this topic? [true, false]"
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
+  
+  KMSKeyId:
+    Description: "It is mandatory to provide a KMS key ID to encrypt this topic at rest. This ID must exist in the account which you are deploying to."
+    Type: String
+
+  SuccessfulLoggingPercent:
+    Description: "How often do you want to log to cloudwatch your successful message delivery?"
+    Type: Number
+    Default: "100"
+    ConstraintDescription: "Please enter a valid number between 0 and 100."
+    MinValue: 0
+    MaxValue: 100
+
+  XrayActiveTracing:
+    Description: "Would you like to enable X-Ray active tracing? (Active or PassThrough)"
+    Default: "PassThrough"
+    Type: String
+    ConstraintDescription: "Valid options are Active and PassThrough"
+    AllowedValues:
+         - "PassThrough"
+         - "Active"
+  
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Environment:
+    Type: String
+    Default: dev
+    Description: "Tag the environment to all your resources."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+Conditions:
+  HasFifo: !Equals [true, !Ref FifoEnabled]
+
+Resources:
+  SNSTopic:
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Type: AWS::SNS::Topic
+    Properties:
+      FifoTopic: !Ref FifoEnabled
+      ContentBasedDeduplication: !If [HasFifo, true, !Ref "AWS::NoValue"]
+      #SNS.2 - Turn on Delivery status logging for all protocols by default
+      DeliveryStatusLogging: 
+        - Protocol: "sqs"
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
+        - Protocol: "lambda"
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
+        - Protocol: "application"
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
+        - Protocol: "firehose"
+          FailureFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackRoleArn: !GetAtt LoggingRole.Arn
+          SuccessFeedbackSampleRate: !Sub '${SuccessfulLoggingPercent}'
+      DisplayName: !If [HasFifo, !Sub "${TopicName}.fifo" , !Ref TopicName]
+      #SNS.1
+      KmsMasterKeyId: !Ref KMSKeyId
+      TopicName: !If [HasFifo, !Sub "${TopicName}-topic.fifo" , !Ref TopicName]
+      TracingConfig: !Ref XrayActiveTracing
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/sns/template.yaml"
+
+  LoggingRole: 
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "sns.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - 
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Effect: Allow
+              Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:PutMetricFilter
+              - logs:PutRetentionPolicy
+              Resource:
+              - "*"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/dynamo/template.yaml"
+
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups:
+      - Label:
+          default: "Topic Name"
+        Parameters: 
+          - TopicName
+      - Label:
+          default: "Mandatory Tags"
+        Parameters: 
+          - Product
+          - System
+          - Environment
+          - Owner
+      - Label:
+          default: "Fifo Configuration"
+        Parameters:
+          - FifoEnabled
