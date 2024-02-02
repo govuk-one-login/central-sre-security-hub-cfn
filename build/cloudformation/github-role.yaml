@@ -1,9 +1,12 @@
 
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template for creating github deployment role.
 
 Resources:
   GitHubActionsRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: github-deployment-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
