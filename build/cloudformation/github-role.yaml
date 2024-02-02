@@ -3,9 +3,11 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: CloudFormation template for creating github deployment role.
 
 Resources:
+
   GitHubActionsRole:
     Type: AWS::IAM::Role
     Properties:
+      Description: IAM role to be assumed by GitHub for deployments.
       RoleName: github-deployment-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -14,6 +16,6 @@ Resources:
             Action: "sts:AssumeRoleWithWebIdentity"
             Principal:
               Federated: !ImportValue GitHubIdentityProviderArn
-        Condition:
-          StringLike:
-            token.actions.githubusercontent.com:sub: repo:govuk-one-login/central-sre-security-hub-cfn:*
+            Condition:
+              StringLike:
+                token.actions.githubusercontent.com:sub: repo:govuk-one-login/central-sre-security-hub-cfn:*
