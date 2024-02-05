@@ -3,6 +3,9 @@ name: Lint and AWS CloudFormation Validate
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
 jobs:
   lint-and-validate:
     runs-on: ubuntu-latest
@@ -30,6 +33,9 @@ jobs:
       with:
         role-to-assume: ${{ secrets.GH_ACTIONS_ROLE }}
         aws-region: eu-west-2
+        permissions:
+          id-token: write
+          contents: read
 
 
     - name: Run cfn-lint to check for issues
