@@ -1,0 +1,20 @@
+project:
+  owner: di-central-sre-build
+  name: security-hub-template-tests
+  package_lambda: false
+  regions:
+    - eu-west-2
+
+  # OPTIONAL: create a bucket for taskcat to use if you don't want it to generate a new one everytime it is run
+  s3_bucket: "di-central-sre-dev-taskcat"
+tests:
+  test-secrets-manager:
+    parameters:
+      SecretName: taskcat-secret
+      SecretDescription: "A secret tested by taskcat"
+      PeriodicRotationDays: 90
+      KmsKeyId: 078ac3c6-11cd-457e-afa1-83952686be46
+      NotifyAfterUnusedForDays: 90
+    template: ./cloudformation/secrets-manager/template.yaml
+    regions:
+    - eu-west-2
