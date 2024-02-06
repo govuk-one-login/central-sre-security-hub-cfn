@@ -13,7 +13,7 @@ tests:
       SecretName: taskcat-secret
       SecretDescription: "A secret tested by taskcat"
       PeriodicRotationDays: 90
-      KmsKeyId: 078ac3c6-11cd-457e-afa1-83952686be46
+      KmsKeyId: 88564c70-2d7f-4781-b6a2-c1e10f62692c
       NotifyAfterUnusedForDays: 90
     template: ./cloudformation/secrets-manager/template.yaml
     regions:
