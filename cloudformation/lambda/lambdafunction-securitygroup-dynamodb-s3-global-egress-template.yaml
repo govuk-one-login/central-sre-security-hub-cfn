@@ -1,14 +1,14 @@
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  # This Security Group template is for Security Group Ingress rules and Security Group Egress rules,
-  # allowing inbound traffic from vpc cidr to port 443 and allowing outbound HTTPS traffic to Internet via port 443.
-  # PreFix List Id has an outbound of security group rules permitting instances from DynamoDB and S3 endpoints via port 443. 
-  # Managed by: central-sre.
+  This Security Group template is for Security Group Ingress rules and Security Group Egress rules,
+  allowing inbound traffic from vpc cidr to port 443 and allowing outbound HTTPS traffic to Internet via port 443.
+  PreFix List Id has an outbound of security group rules permitting instances from DynamoDB and S3 endpoints via port 443. 
+  Managed by: central-sre.
 
 Parameters:
   VpcId:
     Type: String
-    Description: List of Vpc Ids for Security Group 
+    Description: Vpc Id for Security Group. 
 
   VpcCidr:
     Type: String
@@ -28,7 +28,7 @@ Resources:
           ToPort: 443
       SecurityGroupEgress: 
         - CidrIp: 0.0.0.0/0
-          Description: Adds egress rules to security groups which permits instances to recieve outbound HTTPS traffic to Internet globally - Network Firewall will allow only to CRIs
+          Description: Adds egress rules to security groups which permits instances to recieve outbound HTTPS traffic to Internet globally
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
@@ -47,6 +47,6 @@ Resources:
       
 Outputs:
   SecurityGroup: 
-    Description: This is the Lambda functions Security Group ID
+    Description: The Lambda functions Security Group ID
     Value: 
       !GetAtt LambdaSecurityGroup.GroupId

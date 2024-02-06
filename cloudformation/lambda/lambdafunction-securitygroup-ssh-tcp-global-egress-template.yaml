@@ -1,14 +1,13 @@
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  # This Security Group template is for Security Group Ingress rules and Security Group Egress Global rules,
-  # allowing inbound traffic from vpc cidr to port 443 and allowing outbound rules permitting instances to recieve traffic anywhere globally via port -1. 
-  # This is set at default of port 443 and Ip Protocol of tcp.
-  # Managed by: central-sre.
+  This Security Group template is for Security Group Ingress rules and Security Group Egress Global rules,
+  Allowing inbound tcp traffic from vpc cidr range on port 443. Outbound rules can be configured, default of 443 and tcp. Set ToPort, FromPort and IpProtocol to -1 to allow all protocols and ports.
+  Managed by: central-sre.
 
 Parameters:
   VpcId:
     Type: String
-    Description: List of Vpc Ids for Security Group 
+    Description: Vpc Id for Security Group. 
 
   VpcCidr:
     Type: String
@@ -16,17 +15,17 @@ Parameters:
 
   FromPort:
     Type: Number
-    Description: Allows inbound HTTPS traffic from Port 443
+    Description: Configure the outbound from port, default of 443 set to -1 for all ports
     Default: 443
 
   IpProtocol:
     Type: String
-    Description: Enables data communications over networks 
+    Description: Configure the outbound protocol, default of tcp, set to -1 for all protocols 
     Default: tcp
 
   ToPort:
     Type: Number
-    Description: Allows outbound HTTPS traffic via Port 443
+    Description: Configure the outbound to port, default of 443 set to -1 for all ports
     Default: 443
 
 
@@ -44,7 +43,7 @@ Resources:
           ToPort: 443
       SecurityGroupEgress: 
         - CidrIp: 0.0.0.0/0
-          Description: Adds egress rule to security group which permits instances to receive traffic anywhere globally via port -1 with default of port 443
+          Description: Adds egress rule to security group which permits instances to send traffic anywhere for the configured ports and protocols.
           FromPort: !Ref FromPort
           IpProtocol: !Ref IpProtocol
           ToPort: !Ref ToPort
@@ -53,6 +52,6 @@ Resources:
       
 Outputs:
   SecurityGroup: 
-    Description: This is the Lambda functions Security Group ID
+    Description: The Lambda functions Security Group ID
     Value: 
       !GetAtt LambdaSecurityGroup.GroupId

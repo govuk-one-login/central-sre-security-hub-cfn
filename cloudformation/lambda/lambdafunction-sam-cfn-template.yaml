@@ -1,15 +1,15 @@
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  # This Lambda SAM CloudFormation template creates an AWS Lambda function, an AWS Identity and Access Management (IAM) execution role, and event source mappings that trigger the function.
-  # It checks if the Lambda function is configured with a function-level concurrent execution limit,
-  # It checks if the template is configured with a dead letter queue, 
-  # It checks if the AWS Lambda function policy attached to the Lambda resource prohibits public access,
-  # It checks if a Lambda function is allowed access to a virtual private cloud (VPC),
-  # It checks if Lambda has more than 1 availability zone associated with the Lambda.
-  # central-sre-security-hub-cfn lambda cloudformation template version: v0.0.1
-  # Enforces: security hub rule(s) LMDA02, LMDA03, LMDA05.
-  # Supports: security hub rule(s) LMDA04, LMDA06. 
-  # Managed by: central-sre.
+  This Lambda SAM CloudFormation template creates an AWS Lambda function, an AWS Identity and Access Management (IAM) execution role, and event source mappings that trigger the function.
+  It checks if the Lambda function is configured with a function-level concurrent execution limit,
+  It checks if the template is configured with a dead letter queue, 
+  It checks if the AWS Lambda function policy attached to the Lambda resource prohibits public access,
+  It checks if a Lambda function is allowed access to a virtual private cloud (VPC),
+  It checks if Lambda has more than 1 availability zone associated with the Lambda.
+  central-sre-security-hub-cfn lambda cloudformation template version: v0.0.1
+  Enforces: security hub rule(s) LMDA02, LMDA03, LMDA05.
+  Supports: security hub rule(s) LMDA04, LMDA06. 
+  Managed by: central-sre.
 
 Parameters:
   LambdaConcurrentExecutionsLimit: 

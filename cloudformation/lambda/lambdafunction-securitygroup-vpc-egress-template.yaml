@@ -1,13 +1,13 @@
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  # This Security Group template is for Security Group Ingress rules and Security Group Egress VPC rules,
-  # allowing inbound traffic from vpc cidr to port 443 and allowing outbound HTTPS traffic to vpc cidr from port 443.
-  # Managed by: central-sre.
+  This Security Group template is for Security Group Ingress rules and Security Group Egress VPC rules,
+  allowing inbound traffic from vpc cidr to port 443 and allowing outbound HTTPS traffic to vpc cidr from port 443.
+  Managed by: central-sre.
 
 Parameters:
   VpcId:
     Type: String
-    Description: List of Vpc Ids for Security Group 
+    Description: Vpc Id for Security Group. 
 
   VpcCidr:
     Type: String
@@ -37,6 +37,6 @@ Resources:
       
 Outputs:
   SecurityGroup: 
-    Description: This is the Lambda functions Security Group ID
+    Description: The Lambda functions Security Group ID
     Value: 
       !GetAtt LambdaSecurityGroup.GroupId

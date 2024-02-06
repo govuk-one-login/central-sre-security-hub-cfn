@@ -60,7 +60,8 @@ Teams can input custom values into parameters to create or update stack:
       - VPC Cidr
 
 ### Template 5: lambdafunction-securitygroup-ssh-tcp-global-egress-template.yaml
-    This Security Group template is for Security Group Ingress rules and Security Group Egress Global rules allows inbound traffic from vpc cidr to port 443, and allows outbound rule permitting instances to recieve traffic anywhere globally via port -1. This is set at default of port 443.
+    This Security Group template is for Security Group Ingress rules and Security Group Egress Global rules 
+    Allowing inbound tcp traffic from vpc cidr range on port 443. Outbound rules can be configured, default of 443 and tcp. Set ToPort, FromPort and IpProtocol to -1 to allow all protocols and ports.
 
     Teams can input custom values into parameters to create or update stack:
       - VPC Id
