@@ -19,3 +19,19 @@ Resources:
             Condition:
               StringLike:
                 token.actions.githubusercontent.com:sub: repo:govuk-one-login/central-sre-security-hub-cfn:*
+
+  GitHubActionsRoleIamPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: github-deployment-role-policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'cloudformation:ValidateTemplate'
+            Resource: '*'
+      Roles: 
+        - !Ref GitHubActionsRole
+      
+    
