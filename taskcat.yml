@@ -6,7 +6,7 @@ project:
     - eu-west-2
 
   # OPTIONAL: create a bucket for taskcat to use if you don't want it to generate a new one everytime it is run
-  s3_bucket: "di-central-sre-dev-taskcat"
+  s3_bucket: "di-central-sre-taskcat"
 tests:
   test-secrets-manager:
     parameters:
