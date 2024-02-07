@@ -36,7 +36,7 @@ Parameters:
 
   SecurityGroupIds:
     Type: CommaDelimitedList
-    Description: List of Security Group IDs that control inbound and oubound traffic for the instance 
+    Description: List of Security Group IDs that control inbound and outbound traffic for the instance 
 
   LambdaLogGroupRetention:
     Type: Number
