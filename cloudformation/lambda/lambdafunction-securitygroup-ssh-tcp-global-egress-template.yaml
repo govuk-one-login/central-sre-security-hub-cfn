@@ -37,7 +37,7 @@ Resources:
       SecurityGroupIngress:
         - CidrIp:
             !Ref VpcCidr
-          Description: Adds ingress rule to security groups which permits instances to recieve traffic from vpc cidr to port 443
+          Description: Adds ingress rule to security groups which permits instances to receive traffic from vpc cidr to port 443
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
