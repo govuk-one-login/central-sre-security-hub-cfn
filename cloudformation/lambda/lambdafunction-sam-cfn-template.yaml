@@ -15,7 +15,9 @@ Parameters:
   LambdaConcurrentExecutionsLimit: 
     Type: Number 
     Description: This is configured with a function-level concurrent execution limit that you want to reserve for the function.
-    Default: 10
+    Default: 500
+    MinValue: 500
+    MaxValue: 1000
   
   LambdaRole:
     Type: String
