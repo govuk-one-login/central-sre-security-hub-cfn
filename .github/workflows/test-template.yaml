@@ -50,4 +50,4 @@ jobs:
 
     - name: Run TaskCat
       run: |
-        taskcat -c .taskcat.yml      
+        taskcat test run --no-delete  .taskcat.yml      
