@@ -20,7 +20,7 @@ tests:
     regions:
     - eu-west-2
 
-test-another-secrets-manager:
+  test-another-secrets-manager:
     parameters:
       SecretName: another-taskcat-secret
       SecretDescription: "A different secret tested by taskcat"
