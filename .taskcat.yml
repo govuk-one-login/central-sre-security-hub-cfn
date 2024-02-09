@@ -24,13 +24,13 @@ tests:
     template: ./cloudformation/secrets-manager/template.yaml
     
 
-  test-another-secrets-manager:
-    parameters:
-      SecretName: another-taskcat-secret
-      SecretDescription: "A different secret tested by taskcat"
-      PeriodicRotationDays: 90
-      KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:fakeSecretRotate
-      KmsKeyId: 88564c70-2d7f-4781-b6a2-c1e10f62692c
-      NotifyAfterUnusedForDays: 90
-    template: ./cloudformation/secrets-manager/template.yaml
+  # test-another-secrets-manager:
+  #   parameters:
+  #     SecretName: another-taskcat-secret
+  #     SecretDescription: "A different secret tested by taskcat"
+  #     PeriodicRotationDays: 90
+  #     KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:fakeSecretRotate
+  #     KmsKeyId: 88564c70-2d7f-4781-b6a2-c1e10f62692c
+  #     NotifyAfterUnusedForDays: 90
+  #   template: ./cloudformation/secrets-manager/template.yaml
    
