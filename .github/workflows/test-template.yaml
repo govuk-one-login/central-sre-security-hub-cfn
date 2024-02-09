@@ -34,12 +34,12 @@ jobs:
         role-to-assume: ${{ secrets.GH_ACTIONS_ROLE }}
         aws-region: eu-west-2
 
-     - name: debug
-       run: |
-          aws s3 ls di-central-sre-build-taskcat
-       env: 
-          AWS_REGION: eu-west-2
-          AWS_DEFUALT_REGION: eu-west-2
+    - name: debug
+      run: |
+        aws s3 ls di-central-sre-build-taskcat
+      env: 
+        AWS_REGION: eu-west-2
+        AWS_DEFUALT_REGION: eu-west-2
    
 
 
