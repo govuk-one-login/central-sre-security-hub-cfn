@@ -1,0 +1,233 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  central-sre-security-hub-cfn s3-cloudformation template version: v0.0.1
+  This template is to be used to create the ELB Access Logs bucket for the AWS account.
+  Enforces: security hub rule(s): S309, S310, S311, S312, S317, S318, S319
+  Supports: security hub rule(s): S301, S302, S303, S304, S305, S306, S307, S308, S313, S314, S315, S316, S320, S321
+  Managed by: central-sre.
+
+Parameters: 
+  ELBAccessLogsBucketName: 
+    Description: The name of the S3 bucket to create for the ELB logs. 
+    Type: String
+    MinLength: 3
+    MaxLength: 63
+
+  Mode: 
+    Description: S3 Object Lock retention mode.
+    Type: String
+    AllowedValues:
+         - GOVERNANCE
+         - COMPLIANCE
+    Default: COMPLIANCE
+
+  LogRetentionInDays: 
+    Description: Specifies the number of days that logs events should be retained in the specified log group.
+    Type: Number
+    Default: 365
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+  
+  Environment:
+    Type: String
+    Default: dev
+    Description: "The name of the environment you are deploying into and the value for the tag environment to be added to all your resources."
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+
+  DeletionPolicy:
+    Description: Cloudformation Deletion policy for the resources created by this template.
+    Type: String
+    AllowedValues:
+      - Delete
+      - Retain
+    Default: Retain
+
+  UpdateReplacePolicy:
+    Description: Cloudformation Update Replace policy for the resources created by this template.
+    Type: String
+    AllowedValues:
+      - Delete
+      - Retain
+    Default: Retain
+
+  S3ServerAccessLogsBucket:
+    Description: The name of the bucket that will store the access logs.
+    Type: String
+
+Resources: 
+
+  KMSKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: !Ref DeletionPolicy
+    UpdateReplacePolicy: !Ref UpdateReplacePolicy
+    Properties:
+      Description: KMS key for encrypting the S3 ELB Access Logs bucket.
+      Enabled: true
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}-elbaccesslogs"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/s3-templates/elb-access-logs-bucket.yaml"
+
+  KMSKeyAlias:
+    DeletionPolicy: !Ref DeletionPolicy
+    UpdateReplacePolicy: !Ref UpdateReplacePolicy
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${ELBAccessLogsBucketName}-kms-key"
+      TargetKeyId: !Ref KMSKey
+
+  ELBAccessLogsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: !Ref DeletionPolicy
+    UpdateReplacePolicy: !Ref UpdateReplacePolicy
+    Properties:
+      BucketName: !Ref ELBAccessLogsBucketName
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "aws:kms"
+              KMSMasterKeyID: !Ref KMSKey
+      ObjectLockEnabled: true
+      ObjectLockConfiguration:
+        ObjectLockEnabled: Enabled
+        Rule:
+          DefaultRetention:
+            Mode: !Ref Mode
+            Days: !Ref LogRetentionInDays
+      OwnershipControls: 
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      LifecycleConfiguration:
+        Rules:
+          - Id: BucketExpiry
+            Status: Enabled
+            ExpirationInDays: 30
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3ServerAccessLogsBucket
+        LogFilePrefix: !Join 
+          - ""
+          - - !Ref ELBAccessLogsBucketName
+            - "/"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}-elbaccesslogs"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/s3-templates/elb-access-logs-bucket.yaml"
+
+  ELBAccessLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DeletionPolicy: !Ref DeletionPolicy
+    UpdateReplacePolicy: !Ref UpdateReplacePolicy
+    Properties:
+      Bucket: !Ref ELBAccessLogsBucketName
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowLoadBalancerToLogToS3
+            Action: "s3:PutObject"
+            Effect: Allow
+            Principal:
+              AWS: "arn:aws:iam::652711504416:root"
+            Resource: !Sub "${ELBAccessLogsBucket.Arn}/AWSLogs/${System}/${Environment}/${AWS::AccountId}/*"
+          - Sid: AllowAwsLogDeliveryToLogToS3
+            Action: "s3:PutObject"
+            Effect: Allow
+            Principal: 
+              Service: delivery.logs.amazonaws.com
+            Resource:
+              - !Sub "${ELBAccessLogsBucket.Arn}/AWSLogs/${System}/${Environment}/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                "s3:x-amz-acl": bucket-owner-full-control
+                "aws:SourceAccount": !Sub "${AWS::AccountId}"
+          - Sid: AllowAwsLogDeliveryToReadBucketAcl
+            Action: "s3:GetBucketAcl"
+            Effect: Allow
+            Principal: 
+              Service: delivery.logs.amazonaws.com
+            Resource: !GetAtt ELBAccessLogsBucket.Arn
+            Condition:
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+          - Sid: AllowSSLRequestsOnly
+            Action: "s3:*"
+            Effect: Deny 
+            Principal: "*"
+            Resource:
+              - !Sub ${ELBAccessLogsBucket.Arn}
+              - !Sub ${ELBAccessLogsBucket.Arn}/*
+            Condition: 
+              Bool:
+                "aws:SecureTransport": "false"
+
+Outputs:
+  ELBAccessLogsBucketNameOutput:
+    Value: !Ref ELBAccessLogsBucket
+    Description: The name of the ELB Access Logs s3 bucket.
