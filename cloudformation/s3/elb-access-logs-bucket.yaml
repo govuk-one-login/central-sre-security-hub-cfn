@@ -13,7 +13,6 @@ Parameters:
     Type: String
     MinLength: 3
     MaxLength: 63
-    Default: test-elb-access-logs4
 
   Mode: 
     Description: S3 Object Lock retention mode.
@@ -74,7 +73,6 @@ Parameters:
   S3ServerAccessLogsBucket:
     Description: The name of the bucket that will store the access logs.
     Type: String
-    Default: 022831652856-s3-server-access-logs # ${accountId}-s3-server-access-logs
 
 Resources: 
 
