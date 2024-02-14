@@ -7,8 +7,8 @@ This folder contains the CloudFormation templates  to facilitate the creation fo
 
 Both templates ensure compliance with various AWS Security Hub rules and security best practices, and provide customisable parameters to be used by teams:
 
-- Enforces: security hub rule(s): S309, S310, S311, S312, S317, S318, S319
-- Supports: security hub rule(s): S301, S302, S303, S304, S305, S306, S307, S308, S313, S314, S315, S316, S320, S321
+- **Enforces:** security hub rule(s): S309, S310, S311, S312, S317, S318, S319
+- **Supports:** security hub rule(s): S301, S302, S303, S304, S305, S306, S307, S308, S313, S314, S315, S316, S320, S321
 
 ## Instructions for use
 
@@ -88,7 +88,7 @@ NotificationConfiguration:
         - Ref: AWS::NoValue
 ```
 
-### **[S3.12](https://docs.aws.amazon.com/config/latest/developerguide/s3-bucket-policy-grantee-check.html) - s3-bucket-policy-grantee-check:** 
+### **[S3.12 - s3-bucket-policy-grantee-check:](https://docs.aws.amazon.com/config/latest/developerguide/s3-bucket-policy-grantee-check.html):** 
 
 This rule checks that the access granted by the Amazon S3 bucket is restricted by any of the AWS principals, federated users, service principals, IP addresses, or VPCs that you provide.
 
