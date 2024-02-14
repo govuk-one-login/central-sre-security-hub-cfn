@@ -107,7 +107,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/dynamo/template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/messaging/sns/template.yaml"
 
 Metadata: 
   AWS::CloudFormation::Interface: 

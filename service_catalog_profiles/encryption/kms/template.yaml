@@ -116,7 +116,7 @@ Resources:
         - Key: Service
           Value: "sre"
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/kms/template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/encryption/kms/template.yaml"
 
       KeyPolicy:
         Version: '2012-10-17'
