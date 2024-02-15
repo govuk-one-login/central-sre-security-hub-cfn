@@ -43,6 +43,7 @@ Resources:
           - Effect: Allow
             Action:
               - "cloudformation:CreateStack"
+              - "cloudformation:DeleteStack"
               - "cloudformation:DescribeStacks"
               - "cloudformation:DescribeStackEvents"
               - "cloudformation:ListStacks"
@@ -51,7 +52,9 @@ Resources:
               - "lambda:AddPermission"
               - "s3:GetBucketLocation"
               - "s3:ListAllMyBuckets"
+              - "secretsmanager:CancelRotateSecret"
               - "secretsmanager:CreateSecret"
+              - "secretsmanager:DeleteSecret"
               - "secretsmanager:DescribeSecret"
               - "secretsmanager:RotateSecret"
               - "secretsmanager:TagResource"
