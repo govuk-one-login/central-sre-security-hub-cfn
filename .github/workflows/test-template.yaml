@@ -47,4 +47,4 @@ jobs:
     
       - name: Clean up TaskCat
         run: |
-          taskcat clean all --region eu-west-2
+          taskcat test clean ALL --region=eu-west-2
