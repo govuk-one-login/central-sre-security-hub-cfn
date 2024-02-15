@@ -118,7 +118,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/s3-templates/elb-access-logs-bucket.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/storage/s3/elb-access-logs-bucket.yaml"
 
   KMSKeyAlias:
     DeletionPolicy: !Ref DeletionPolicy
@@ -179,7 +179,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/s3-templates/elb-access-logs-bucket.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/storage/s3/elb-access-logs-bucket.yaml"
 
   ELBAccessLogsBucketPolicy:
     Type: AWS::S3::BucketPolicy

@@ -1,4 +1,5 @@
 Transform: AWS::Serverless-2016-10-31
+
 Description: >
   This Lambda SAM CloudFormation template creates an AWS Lambda function, an AWS Identity and Access Management (IAM) execution role, and event source mappings that trigger the function.
   It checks if the Lambda function is configured with a function-level concurrent execution limit,

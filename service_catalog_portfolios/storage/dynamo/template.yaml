@@ -215,7 +215,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/dynamo/template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/storage/dynamo/template.yaml"
 
   #DynamoDB.1 - If in provisioned mode enable read autoscaling
   ReadCapacityScalableTarget:   
@@ -322,7 +322,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/cloudformation/dynamo/template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/storage/dynamo/template.yaml"
 
 Outputs:
   TableName:

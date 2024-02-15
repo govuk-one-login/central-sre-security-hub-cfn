@@ -1,0 +1,54 @@
+{
+    "[yaml]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        },
+        "editor.autoIndent": "full"
+    },
+    "editor.renderWhitespace": "all",
+    "editor.tabSize": 2,
+    "editor.autoIndent": "full",
+    "yaml.format.enable": true,
+    "yaml.trace.server": "verbose",
+    "yaml.customTags": [
+        "!And scalar",
+        "!If scalar",
+        "!If",
+        "!If sequence",
+        "!Not",
+        "!Equals scalar",
+        "!Equals",
+        "!Equals sequence",
+        "!Or",
+        "!Or scalar",
+        "!Or sequence",
+        "!FindInMap scalar",
+        "!Base64",
+        "!Cidr",
+        "!Ref",
+        "!Sub",
+        "!Sub sequence",
+        "!GetAtt",
+        "!GetAtt sequence",
+        "!GetAZs",
+        "!ImportValue sequence",
+        "!Select sequence",
+        "!Split sequence",
+        "!Join sequence"
+    ],
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "*-template.json"
+            ],
+            "url": "https://s3.amazonaws.com/cfn-resource-specifications-us-east-1-prod/schemas/2.15.0/all-spec.json"
+        }
+    ],
+    "yaml.schemas": {
+        "https://s3.amazonaws.com/cfn-resource-specifications-us-east-1-prod/schemas/2.15.0/all-spec.json": "*-template.yaml"
+    }
+}
