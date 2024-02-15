@@ -24,13 +24,12 @@ jobs:
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE }}
           aws-region: eu-west-2
       
-      # TODO removed for speed
-      # - name: Validate AWS CloudFormation stack
-      #   run: |
-      #     aws cloudformation validate-template \
-      #       --template-body file://service_catalog_portfolios/storage/secrets-manager/template.yaml
+      - name: Validate AWS CloudFormation stack
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://service_catalog_portfolios/storage/secrets-manager/template.yaml
       
-      - name: Generate and apply has
+      - name: Generate and apply hash
         run: |
           hash=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 13; echo)
           echo $hash
@@ -42,4 +41,10 @@ jobs:
 
       - name: Run TaskCat
         run: |
-          taskcat test run --no-delete       
+          taskcat test run --no-delete
+      
+      #TODO run sec hub script
+    
+      - name: Clean up TaskCat
+        run: |
+          taskcat clean all --region eu-west-2

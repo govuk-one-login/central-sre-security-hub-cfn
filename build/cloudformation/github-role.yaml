@@ -44,6 +44,7 @@ Resources:
             Action:
               - "cloudformation:CreateStack"
               - "cloudformation:DescribeStacks"
+              - "cloudformation:DescribeStackEvents"
               - "cloudformation:ListStacks"
               - "cloudformation:UpdateStack"
               - "cloudformation:ValidateTemplate"
@@ -51,8 +52,20 @@ Resources:
               - "s3:GetBucketLocation"
               - "s3:ListAllMyBuckets"
               - "secretsmanager:CreateSecret"
+              - "secretsmanager:DescribeSecret"
+              - "secretsmanager:RotateSecret"
               - "secretsmanager:TagResource"
             Resource: "*"
+          - Effect: Allow
+            Action:
+              - "kms:*"
+            # TODO the key should be created in this template
+            Resource: "arn:aws:kms:eu-west-2:891376909120:key/88564c70-2d7f-4781-b6a2-c1e10f62692c"
+          - Effect: Allow
+            Action:
+              - "lambda:*"
+            # TODO Creation of this lambda needs to be in IaC
+            Resource: "arn:aws:lambda:eu-west-2:891376909120:function:fakeSecretRotate"
       Roles: 
         - !Ref GitHubActionsRole
       
