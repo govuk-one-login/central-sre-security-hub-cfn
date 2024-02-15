@@ -41,10 +41,4 @@ jobs:
 
       - name: Run TaskCat
         run: |
-          taskcat test run --no-delete
-      
-      #TODO run sec hub script
-    
-      - name: Clean up TaskCat
-        run: |
-          taskcat test clean ALL --region=eu-west-2
+          ./build/scripts/run_taskcat.sh
