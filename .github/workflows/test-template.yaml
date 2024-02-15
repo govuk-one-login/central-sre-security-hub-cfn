@@ -34,7 +34,7 @@ jobs:
         run: |
           hash=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 13; echo)
           echo $hash
-          sed -i "s\<hash-place-holder>\$hash}\g" input.txt
+          sed -i "s/<hash-place-holder>/$hash/g" .taskcat.yml
 
       - name: Install TaskCat
         run: |
