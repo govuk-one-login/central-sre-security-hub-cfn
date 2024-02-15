@@ -36,6 +36,7 @@ Resources:
               - "s3:PutObject"
               - "s3:GetObject"
               - "s3:ListBucket"
+              - "s3:DeleteObject"
             Resource: 
               - "arn:aws:s3:::di-central-sre-build-taskcat/*"
               - "arn:aws:s3:::di-central-sre-build-taskcat"
@@ -50,6 +51,7 @@ Resources:
               - "s3:GetBucketLocation"
               - "s3:ListAllMyBuckets"
               - "secretsmanager:CreateSecret"
+              - "secretsmanager:TagResource"
             Resource: "*"
       Roles: 
         - !Ref GitHubActionsRole
