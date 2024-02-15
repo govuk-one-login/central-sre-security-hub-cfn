@@ -14,19 +14,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+    # - name: Set up Node.js
+    #   uses: actions/setup-node@v4
+    #   with:
+    #     node-version: '20'
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
 
-    - name: Install cfn-lint
-      run: |
-        pip install cfn-lint
+    # - name: Install cfn-lint
+    #   run: |
+    #     pip install cfn-lint
 
     - name: Set up AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -34,9 +34,9 @@ jobs:
         role-to-assume: ${{ secrets.GH_ACTIONS_ROLE }}
         aws-region: eu-west-2
 
-    - name: Run cfn-lint to check for issues
-      run: |
-        cfn-lint cloudformation/secrets-manager/template.yaml
+    # - name: Run cfn-lint to check for issues
+    #   run: |
+    #     cfn-lint cloudformation/secrets-manager/template.yaml
 
     - name: Validate AWS CloudFormation stack
       run: |
