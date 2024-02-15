@@ -41,7 +41,7 @@ jobs:
     - name: Validate AWS CloudFormation stack
       run: |
         aws cloudformation validate-template \
-          --template-body file://cloudformation/secrets-manager/template.yaml
+          --template-body file://service_catalog_portfolios/storage/secrets-manager/template.yaml
 
     - name: Install TaskCat
       run: |
