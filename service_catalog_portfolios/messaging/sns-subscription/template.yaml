@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  central-sre-security-hub-cfn sns subscription template
+  Enforces: security hub rule(s) 
+  - SNS01
+  - SNS02
+  Managed by: central-sre.
+  
+Parameters:
+  TopicArn:
+    Description: "The arn of the SNS topic that you want to subscribe to."
+    Type: String
+    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-:]+"
+    ConstraintDescription: Please enter a valid AWS ARN.
+
+  SubscriberType:
+    Description: "What AWS resource type do you want as your subscriber?"
+    Type: String
+    Default: "lambda"
+    AllowedValues:
+         - "sqs"
+         - "lambda"
+         - "firehose"
+         - "application"
+
+  SubscriberArn:
+    Description: What is the arn of the resource that you want to subscribe to the sns topic? This must be a valid arn for SQS, Lambda, Application endpoint, or Firehose.
+    Type: String
+    AllowedPattern: "arn:aws:[a-z0-9-]+:[a-z0-9-]+:[0-9]{12}:[a-z0-9-:]+"
+    ConstraintDescription: Please enter a valid AWS ARN.
+  
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Environment:
+    Type: String
+    Default: dev
+    Description: "Tag the environment to all your resources."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+Conditions:
+  HasSubscribeFirehose: !Equals [ "firehose", !Ref SubscriberType ]
+
+Resources:
+
+  SNSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Ref SubscriberArn
+      SubscriptionRoleArn: !If
+        - HasSubscribeFirehose
+        - !GetAtt FirehoseRole.Arn
+        - !Ref "AWS::NoValue"
+      Protocol: !Ref SubscriberType
+      TopicArn: !Ref TopicArn
+
+  FirehoseRole:
+    Condition: HasSubscribeFirehose
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "sns.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - 
+          PolicyName: "root"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Action:
+              - firehose:DescribeDeliveryStream
+              - firehose:ListDeliveryStreams
+              - firehose:ListTagsForDeliveryStream
+              - firehose:PutRecord
+              - firehose:PutRecordBatch
+              Resource:
+              - !Ref SubscriberArn
+              Effect: Allow
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/messaging/sns/template.yaml"
+
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups:
+      - Label:
+          default: "Topic Information"
+        Parameters: 
+          - TopicArn
+      - Label:
+          default: "Mandatory Tags"
+        Parameters: 
+          - Product
+          - System
+          - Environment
+          - Owner
+      - Label:
+          default: "Subscription Configuration"
+        Parameters: 
+          - SubscriberType
+          - SubscriberArn

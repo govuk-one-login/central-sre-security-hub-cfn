@@ -1,0 +1,374 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  central-sre-security-hub-cfn dynamo template version: v0.0.1
+  Enforces: security hub rule(s) 
+  - DYDB01
+  - DYDB02
+  - DYDB04
+  Managed by: central-sre.
+
+Parameters:
+  DynamoTableName:
+    Description: "What is the name of your table? The default naming convention is Owner-Environment-System."
+    Default: "null"
+    Type: String
+
+  ContributorInsightsEnabled:
+    Description: "Do you want to enable Cloudwatch Contributor Insights? [true or false]"
+    Default: false
+    Type: String
+    AllowedValues:
+       - true
+       - false
+
+  TableKMSKey:
+    Description: "It is mandatory to provide a KMS key ID to encrypt this table at rest. This ID must exist in the account which you are deploying to."
+    Type: String
+
+  ProvisionedThroughputEnabled:
+    Description: "Do you want to enable the database to be run in provisioned throughput mode? [true or false]
+                  Dynamo Naturally throttles reads and writes above 40k capacity units / second per table and 80k capacity units / second per account. 
+                  If you enable provisioned throughput please also configure target and minimum and maxium values for read, write autoscaling."
+    Default: false
+    Type: String
+    AllowedValues:
+         - true
+         - false
+
+  TargetReadCapacity:
+    Description: "The target number of reads consumed per second. Dynamo Naturally throttles reads on 40k per table and 80k per account."
+    Type: Number
+    Default: 300
+    MinValue: 10
+    MaxValue: 20000
+
+  MaxReadCapacity:
+    Description: "The maximum number of reads consumed per second. Must be larger than the minimum."
+    Type: Number
+    Default: 400  
+    MinValue: 1 
+    MaxValue: 20000
+  
+  MinReadCapacity:
+    Description: "The minimum number of reads consumed per second. Must be smaller than the maximum."
+    Type: Number
+    Default: 200
+    MinValue: 1 
+    MaxValue: 20000
+
+  TargetWriteCapacity: 
+    Description: "The target number of writes consumed per second. Dynamo Naturally throttles writes on 40k per table and 80k per account."
+    Type: Number
+    Default: 300  
+    MinValue: 10 
+    MaxValue: 20000 
+
+  MaxWriteCapacity:
+    Description: "The maxiumum number of writes consumed per second. Must be larger than the minimum."
+    Type: Number
+    Default: 400  
+    MinValue: 1 
+    MaxValue: 20000
+  
+  MinWriteCapacity:
+    Description: "The minimum number of writes consumed per second. Must be smaller than the maximum."
+    Type: Number
+    Default: 200  
+    MinValue: 1 
+    MaxValue: 20000 
+
+  PrimaryKeyName:
+    Description: "The Name of your primary key for the table."
+    Type: String
+    Default: "id"
+    MinLength: 1
+    MaxLength: 255
+
+  PrimaryKeyType:
+    Description: "The type of your primary key. Must be either S (String), N (Number), or B (Boolean)."
+    Type: String
+    Default: "S"
+    AllowedValues:
+         - "S"
+         - "N"
+         - "B"
+  
+  SortKeyEnabled:
+    Description: "Would you like to add a second partion key as the sort key? [true or false]"
+    Default: false
+    Type: String
+    AllowedValues:
+         - true
+         - false
+
+  SortKeyName:
+    Description: "The Name of your sort key for the table."
+    Type: String
+    Default: timestamp
+    MinLength: 1
+    MaxLength: 255
+  
+  SortKeyType:
+    Description: "The type of your sort key for the table. Must be either S (String), N (Number), or B (Boolean)."
+    Type: String
+    Default: "S"
+    AllowedValues:
+      - "S"
+      - "N" 
+      - "B"
+  
+  TimeToLiveEnabled:
+    Type: String
+    Default: true
+    Description: "Do you want to enable time to live for this table? [true or false]"
+    AllowedValues:
+      - true
+      - false
+
+  TimeToLiveColumnName:
+    Type: String
+    Default: "TTL"
+    Description: "Name of the time to live column."
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Environment:
+    Type: String
+    Default: dev
+    Description: "Tag the environment to all your resources."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+Conditions:
+  IsProvisionedThroughputEnabled: !Equals [true, !Ref ProvisionedThroughputEnabled]
+  HasTableName: !Not [!Equals ["null", !Ref DynamoTableName]]
+  HasSortKey: !Equals [true, !Ref SortKeyEnabled]
+
+Resources:
+  DynamoDB:
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions: !If
+        - HasSortKey
+        -
+          - AttributeName: !Ref PrimaryKeyName
+            AttributeType: !Ref PrimaryKeyType
+          - AttributeName: !Ref SortKeyName
+            AttributeType: !Ref SortKeyType
+        -
+          - AttributeName: !Ref PrimaryKeyName
+            AttributeType: !Ref PrimaryKeyType    
+      KeySchema:  !If
+        - HasSortKey
+        -
+          - AttributeName: !Ref PrimaryKeyName
+            KeyType: "HASH"
+          - AttributeName: !Ref SortKeyName
+            KeyType: "RANGE"
+        -
+          - AttributeName: !Ref PrimaryKeyName
+            KeyType: "HASH"
+      ContributorInsightsSpecification:
+        Enabled: !Ref ContributorInsightsEnabled
+      BillingMode: !If [IsProvisionedThroughputEnabled, "PROVISIONED", "PAY_PER_REQUEST"]
+      ProvisionedThroughput: !If
+        - IsProvisionedThroughputEnabled
+        -
+          ReadCapacityUnits: !Ref TargetReadCapacity
+          WriteCapacityUnits: !Ref TargetWriteCapacity
+        - !Ref "AWS::NoValue"
+      TableName: !If [HasTableName, !Ref DynamoTableName, !Sub "${Owner}-${Environment}-${System}"]
+      TimeToLiveSpecification:
+        AttributeName: !Ref TimeToLiveColumnName
+        Enabled: !Ref TimeToLiveEnabled
+      #DynamoDB.2
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !Ref TableKMSKey
+        SSEEnabled: true
+        SSEType: KMS
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/storage/dynamo/template.yaml"
+
+  #DynamoDB.1 - If in provisioned mode enable read autoscaling
+  ReadCapacityScalableTarget:   
+    Condition: IsProvisionedThroughputEnabled
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: !Ref MaxReadCapacity
+      MinCapacity: !Ref MinReadCapacity
+      ResourceId: !Join
+        - /
+        - - table
+          - !Ref DynamoDB
+      RoleARN: !GetAtt ScalingRole.Arn
+      ScalableDimension: dynamodb:table:ReadCapacityUnits
+      ServiceNamespace: dynamodb
+
+  ReadScalingPolicy:
+    Condition: IsProvisionedThroughputEnabled
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-DynamoReadAutoScalingPolicy"
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ReadCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        # Scaling begins when Utilization hits 50%
+        TargetValue: 50.0
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBReadCapacityUtilization
+
+  #DynamoDB.1 - If in provisioned mode enable write autoscaling
+  WriteCapacityScalableTarget:
+    Condition: IsProvisionedThroughputEnabled
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: !Ref MaxWriteCapacity
+      MinCapacity: !Ref MinWriteCapacity
+      ResourceId: !Join
+        - /
+        - - table
+          - !Ref DynamoDB
+      RoleARN: !GetAtt ScalingRole.Arn
+      ScalableDimension: dynamodb:table:WriteCapacityUnits
+      ServiceNamespace: dynamodb
+
+  WriteScalingPolicy:
+    Condition: IsProvisionedThroughputEnabled
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-DynamoWriteAutoScalingPolicy"
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref WriteCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        # Scaling begins when Utilization hits 50%
+        TargetValue: 50.0
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBWriteCapacityUtilization
+
+  # IAM Role for Dynamo scaling
+  ScalingRole:
+    Condition: IsProvisionedThroughputEnabled
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - application-autoscaling.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        -
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "dynamodb:DescribeTable"
+                  - "dynamodb:UpdateTable"
+                  - "cloudwatch:PutMetricAlarm"
+                  - "cloudwatch:DescribeAlarms"
+                  - "cloudwatch:GetMetricStatistics"
+                  - "cloudwatch:SetAlarmState"
+                  - "cloudwatch:DeleteAlarms"
+                Resource: "*"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/storage/dynamo/template.yaml"
+
+Outputs:
+  TableName:
+    Description: "The name of the DynamoDB table"
+    Value: !Ref DynamoDB
+    Export:
+      Name: !Sub "${AWS::StackName}-table-name"
+  TableArn:
+    Description: "The Arn of the DynamoDB table"
+    Value: !GetAtt DynamoDB.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-table-arn"
+  TableKeyId:
+    Description: "The Id of the Events table encryption key"
+    Value: !Ref TableKMSKey
+    Export:
+      Name: !Sub "${AWS::StackName}-dynamo-key-id"
+      
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups:
+      - Label:
+          default: "Mandatory Tags"
+        Parameters: 
+          - Product
+          - System
+          - Environment
+          - Owner
+
+      - Label:
+          default: "Provisioned Throughput"
+          description: "Dynamo Naturally throttles reads and writes above 40k capacity units / second per table and 80k capacity units / second per account. If you enable provisioned throughput please also configure target and minimum and maxium values for read, write autoscaling."
+        Parameters: 
+          - ProvisionedThroughputEnabled
+          - TargetReadCapacity
+          - MaxReadCapacity
+          - MinReadCapacity
+          - TargetWriteCapacity
+          - MaxWriteCapacity
+          - MinWriteCapacity
+      
+      - Label:
+          default: "Primary Key"
+        Parameters: 
+          - PrimaryKeyName
+          - PrimaryKeyType
+          - SortKeyEnabled
+          - SortKeyName
+          - SortKeyType
