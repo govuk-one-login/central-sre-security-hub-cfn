@@ -72,5 +72,7 @@ taskcat test clean ALL --region eu-west-2
 if [ "$failure_flag" -eq "1" ]; then
     exit 1
 else
+    echo ""
     echo "No Security Hub issues found"
+    echo ""
 fi

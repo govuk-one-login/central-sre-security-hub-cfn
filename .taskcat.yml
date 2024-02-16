@@ -19,7 +19,7 @@ tests:
       SecretDescription: "A secret tested by taskcat"
       PeriodicRotationDays: 90
       KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:fakeSecretRotate
-      KmsKeyId: 88564c70-2d7f-4781-b6a2-c1e10f62692c
+      KmsKeyId: bdfc7df5-95ae-426b-b520-80c3d434ae52
       NotifyAfterUnusedForDays: 90
     template: ./service_catalog_portfolios/storage/secrets-manager/template.yaml
     

@@ -20,6 +20,8 @@
         "!If",
         "!If sequence",
         "!Not",
+        "!Not scalar",
+        "!Not sequence",
         "!Equals scalar",
         "!Equals",
         "!Equals sequence",

@@ -62,8 +62,7 @@ Resources:
           - Effect: Allow
             Action:
               - "kms:*"
-            # TODO the key should be created in this template
-            Resource: "arn:aws:kms:eu-west-2:891376909120:key/88564c70-2d7f-4781-b6a2-c1e10f62692c"
+            Resource: "arn:aws:kms:eu-west-2:891376909120:key/bdfc7df5-95ae-426b-b520-80c3d434ae52"
           - Effect: Allow
             Action:
               - "lambda:*"

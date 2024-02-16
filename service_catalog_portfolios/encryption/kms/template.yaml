@@ -25,8 +25,7 @@ Parameters:
     Description: 'ARN of the SNS topic'
     Type: String
     Default: ''
-    
- 
+  
   Service:
     Description: 'Which AWS service is allowed to use this CMK (upper-case names define use-cases)'
     Type: String
@@ -66,7 +65,6 @@ Parameters:
     - ENCRYPT_DECRYPT
     - SIGN_VERIFY
     Default: ENCRYPT_DECRYPT
-  
 
   KMSDeletionPolicy:
     Description: 'Attribute you can preserve, and in some cases, backup a resource when its stack is deleted' 
@@ -85,14 +83,14 @@ Parameters:
     Default: Retain
 
 Conditions:
-      HasServiceAllServices: !Equals [!Ref Service, 'ALL_SERVICES']
-      HasServiceS3PublicAccess: !Equals [!Ref Service, 'S3_PUBLIC_ACCESS']
-      HasServiceRoute53Dnssec: !Or [!Equals [!Ref Service, 'ROUTE53_DNSSEC'], !Equals [!Ref Service, 'dnssec-route53']]
-      HasServiceCloudFront: !Equals [!Ref Service, 'CLOUDFRONT']
-      HasServiceCloudTrail: !Equals [!Ref Service, 'CLOUDTRAIL']
-      HasService: !Not [!Or [!Condition HasServiceAllServices, !Condition HasServiceS3PublicAccess, !Condition HasServiceRoute53Dnssec, !Condition HasServiceCloudFront, !Condition HasServiceCloudTrail]]
-      HasAlertTopic: !Not [!Equals [!Ref AlertTopicARN, '']]
-      AllowedAccountsNotEmpty: !Not [!Equals [!Join ["", !Ref AllowedAccounts], ""]]      
+  HasServiceAllServices: !Equals [!Ref Service, 'ALL_SERVICES']
+  HasServiceS3PublicAccess: !Equals [!Ref Service, 'S3_PUBLIC_ACCESS']
+  HasServiceRoute53Dnssec: !Or [!Equals [!Ref Service, 'ROUTE53_DNSSEC'], !Equals [!Ref Service, 'dnssec-route53']]
+  HasServiceCloudFront: !Equals [!Ref Service, 'CLOUDFRONT']
+  HasServiceCloudTrail: !Equals [!Ref Service, 'CLOUDTRAIL']
+  HasService: !Not [!Or [!Condition HasServiceAllServices, !Condition HasServiceS3PublicAccess, !Condition HasServiceRoute53Dnssec, !Condition HasServiceCloudFront, !Condition HasServiceCloudTrail]]
+  HasAlertTopic: !Not [!Equals [!Ref AlertTopicARN, '']]
+  AllowedAccountsNotEmpty: !Not [!Equals [!Join ["", !Ref AllowedAccounts], ""]]      
 
 Resources:
   Key:
@@ -117,7 +115,6 @@ Resources:
           Value: "sre"
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/encryption/kms/template.yaml"
-
       KeyPolicy:
         Version: '2012-10-17'
         Statement:
@@ -264,7 +261,6 @@ Resources:
       Targets:
       - Arn: !Ref AlertTopicARN
         Id: rule
-
 
 Outputs:
   TemplateID:
