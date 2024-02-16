@@ -1,6 +1,6 @@
 #!/bin/bash
 region=eu-west-2
-delay=20
+delay=30
 taskcat test run --no-delete
 echo "giving security hub ${delay}s to run..."
 sleep $delay
@@ -54,7 +54,7 @@ failure_flag=0
 
 for f in $(find stack-tests -name '*.json')
 do
-  failure=$(cat $f jq '.[] | select(.Status == "FAILED")')
+  failure=$(cat $f | jq '.[] | select(.Status == "FAILED")')
   if [ -n "$failure" ]; then
     echo ""
     echo "${f} has failing Security Hub rules"
@@ -71,4 +71,6 @@ taskcat test clean ALL --region eu-west-2
 
 if [ "$failure_flag" -eq "1" ]; then
     exit 1
+else
+    echo "No Security Hub issues found"
 fi
