@@ -49,6 +49,7 @@ Resources:
               - "cloudformation:DescribeStacks"
               - "cloudformation:DescribeStackEvents"
               - "cloudformation:ListStacks"
+              - "cloudformation:ListStackResources"
               - "cloudformation:UpdateStack"
               - "cloudformation:ValidateTemplate"
               - "lambda:AddPermission"

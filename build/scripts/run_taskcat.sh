@@ -9,9 +9,6 @@ stacksdir=stack-tests
 mkdir ./$stacksdir
 echo "Getting them stacks..."
 # Search by custom tag (could also search by stack name prefix)
-echo 'MELV MELV MELV'
-echo 'taskcat-<hash-place-holder>'
-echo 'MELV MELV MELV'
 stacks=($(aws cloudformation describe-stacks \
     --region $region \
     --query "Stacks[?Tags[?Key == 'TestingFramework' && Value == 'taskcat-<hash-place-holder>']].{StackName: StackName}" \
@@ -21,15 +18,8 @@ do
     echo ""
     echo "Testing stack $stack"
     echo "=================================================================="
-    echo "MELV MELV MELV"
-    pwd
-    echo "MELV MELV MELV"
-    echo "$stacksdir/$stack"
-    echo "MELV MELV MELV"
     stackdir=$stacksdir/$stack
     mkdir $stackdir
-    ls -al 
-    echo "MELV MELV MELV"
     echo "Getting the stack resources..."
     #resources=($(sort -u resources)) gives us unique entries
     resources=($(aws cloudformation list-stack-resources \
@@ -62,11 +52,8 @@ done # end loop through all stacks
 
 failure_flag=0
 
-ls -al ./stack-tests
-
 for f in $(find ./stack-tests -name '*.json')
 do
-  cat $f
   failure=$(cat $f | jq '.[] | select(.Status == "FAILED")')
   if [ -n "$failure" ]; then
     echo ""
