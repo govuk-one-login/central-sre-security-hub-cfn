@@ -1,6 +1,6 @@
 terraform {
   required_version = ">= 1.7.3"
-  
+
   backend "s3" {
     bucket = "di-central-sre-build-tfstate"
     key    = "service_catalog_product_tests/pipeline_dependencies.tfstate"
