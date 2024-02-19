@@ -8,7 +8,7 @@ output "build_kms_key_arn" {
   value       = aws_cloudformation_stack.build_kms_key.outputs.KeyArn
 }
 
-output "vpc_stack_outputs" {
-  description = "The outputs from the vpc stack"
-  value = module.vpc.stack_outputs
+output "empty_lambda_arn" {
+  description = "The ARN of the empty lambda"
+  value = aws_cloudformation_stack.empty_lambda.outputs.LambdaFunctionARN
 }
