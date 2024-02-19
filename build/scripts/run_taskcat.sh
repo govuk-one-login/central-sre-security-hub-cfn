@@ -18,8 +18,15 @@ do
     echo ""
     echo "Testing stack $stack"
     echo "=================================================================="
+    echo "MELV MELV MELV"
+    pwd
+    echo "MELV MELV MELV"
+    echo "$stacksdir/$stack"
+    echo "MELV MELV MELV"
     stackdir=$stacksdir/$stack
     mkdir $stackdir
+    ls -al 
+    echo "MELV MELV MELV"
     echo "Getting the stack resources..."
     #resources=($(sort -u resources)) gives us unique entries
     resources=($(aws cloudformation list-stack-resources \
