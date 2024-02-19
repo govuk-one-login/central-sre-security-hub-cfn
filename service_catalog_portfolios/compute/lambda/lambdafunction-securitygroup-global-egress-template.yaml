@@ -71,7 +71,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-sam-cfn-template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-securitygroup-global-egress-template.yaml"
         
       
 Outputs:
