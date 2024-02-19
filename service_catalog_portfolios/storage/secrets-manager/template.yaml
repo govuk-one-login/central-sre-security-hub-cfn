@@ -79,11 +79,10 @@ Resources:
       KmsKeyId: !Ref KmsKeyId
       Name: !Ref SecretName
       Tags:
+        - Key: StackName
+          Value: !Ref AWS::StackName
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref AWS::StackName
-              - !Ref SecretName
+          Value: !Ref SecretName
         - Key: Product
           Value: !Ref Product
         - Key: System
