@@ -13,6 +13,12 @@ project:
   package_lambda: false
   
 tests:
+
+  # storage
+
+  ## dynamodb
+  ## s3
+  ## secrets manager
   test-secrets-manager:
     parameters:
       SecretName: taskcat-<hash-place-holder>-secret
@@ -22,7 +28,8 @@ tests:
       KmsKeyId: bdfc7df5-95ae-426b-b520-80c3d434ae52
       NotifyAfterUnusedForDays: 90
     template: ./service_catalog_portfolios/storage/secrets-manager/template.yaml
-    
+  
+
 
   # test-another-secrets-manager:
   #   parameters:
