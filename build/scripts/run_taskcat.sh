@@ -54,6 +54,7 @@ failure_flag=0
 
 for f in $(find stack-tests -name '*.json')
 do
+  cat $f
   failure=$(cat $f | jq '.[] | select(.Status == "FAILED")')
   if [ -n "$failure" ]; then
     echo ""
@@ -67,7 +68,7 @@ do
 done
 
 # clean up the test stacks
-taskcat test clean ALL --region eu-west-2
+# taskcat test clean ALL --region eu-west-2
 
 if [ "$failure_flag" -eq "1" ]; then
     exit 1
