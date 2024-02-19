@@ -80,6 +80,21 @@ Parameters:
       - "staging"
       - "integration"
       - "production"
+  
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
 
 Conditions:
   CentralisedLoggingLambdaFunction:
@@ -124,12 +139,38 @@ Resources:
             !Ref SecretsManagerArn
       Policies:
         LambdaPolicies: !Ref LambdaPolicies
+    Tags:
+      - Key: StackName
+        Value: !Sub "${AWS::StackName}"
+      - Key: Product
+        Value: !Ref Product
+      - Key: System
+        Value: !Ref System
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: Owner
+        Value: !Ref Owner
+      - Key: Source
+        Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-sam-cfn-template.yaml"
 
   LambdaFunctionLogGroup: 
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "${AWS::StackName}-LogGroup"
       RetentionInDays: !Ref LambdaLogGroupRetention
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-sam-cfn-template.yaml"
 
   LambdaFunctionLogSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -143,6 +184,20 @@ Resources:
     Type: AWS::SQS::Queue
     Properties: 
       QueueName: !Sub "${AWS::StackName}-LambdaFunction-DLQ"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-sam-cfn-template.yaml"
+
 
   DenyPublicAccessPolicy:
     Type: AWS::IAM::RolePolicy

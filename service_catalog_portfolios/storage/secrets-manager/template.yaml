@@ -44,6 +44,32 @@ Parameters:
     MinValue: 1
     Default: 90
     ConstraintDescription: Must be a value between 1 and 90.
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+  Environment:
+    Type: String
+    Default: dev
+    Description: "The name of the environment you are deploying into and the value for the tag environment to be added to all your resources."
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
       
 Resources: 
   SecretsManagerSecret:
@@ -58,8 +84,14 @@ Resources:
             - "-"
             - - !Ref AWS::StackName
               - !Ref SecretName
-        - Key: Service
-          Value: "sre"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/storage/secrets-manager/template.yaml"
         - Key: NotifyAfterUnusedForDays
