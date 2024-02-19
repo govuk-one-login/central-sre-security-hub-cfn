@@ -9,6 +9,9 @@ stacksdir=stack-tests
 mkdir ./$stacksdir
 echo "Getting them stacks..."
 # Search by custom tag (could also search by stack name prefix)
+echo 'MELV MELV MELV'
+echo 'taskcat-<hash-place-holder>'
+echo 'MELV MELV MELV'
 stacks=($(aws cloudformation describe-stacks \
     --region $region \
     --query "Stacks[?Tags[?Key == 'TestingFramework' && Value == 'taskcat-<hash-place-holder>']].{StackName: StackName}" \
