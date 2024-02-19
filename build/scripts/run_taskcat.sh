@@ -52,7 +52,9 @@ done # end loop through all stacks
 
 failure_flag=0
 
-for f in $(find stack-tests -name '*.json')
+ls -al ./stack-tests
+
+for f in $(find ./stack-tests -name '*.json')
 do
   cat $f
   failure=$(cat $f | jq '.[] | select(.Status == "FAILED")')
@@ -61,14 +63,14 @@ do
     echo "${f} has failing Security Hub rules"
     echo ""
     echo $failure
-    if [ "$failure_flag" -eq "0" ]; then
-        failure_flag = 1
-    fi
+    failure_flag=1
   fi
 done
 
+echo $failure_flag
+
 # clean up the test stacks
-# taskcat test clean ALL --region eu-west-2
+taskcat test clean ALL --region eu-west-2
 
 if [ "$failure_flag" -eq "1" ]; then
     exit 1
