@@ -12,6 +12,32 @@ Parameters:
   VpcCidr:
     Type: String
     Description: List of Vpc Cidr for Security Group 
+  
+  Environment:
+    Type: String
+    Description: Name of environment you are deploying into and the value for the tag environment to be added to all resources.
+    Default: dev
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
 
 Resources:
   LambdaSecurityGroup:
@@ -33,7 +59,21 @@ Resources:
           IpProtocol: tcp
           ToPort: 443 
       VpcId:
-        !Ref VpcId 
+        !Ref VpcId
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-securitygroup-vpc-egress-template.yaml"
+  
       
 Outputs:
   SecurityGroup: 
