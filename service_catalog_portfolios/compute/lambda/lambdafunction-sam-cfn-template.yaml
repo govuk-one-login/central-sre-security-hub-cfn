@@ -1,4 +1,6 @@
-Transform: AWS::Serverless-2016-10-31
+Transform: 
+  - AWS::LanguageExtensions
+  - AWS::Serverless-2016-10-31
 
 Description: >
   This Lambda SAM CloudFormation template creates an AWS Lambda function, an AWS Identity and Access Management (IAM) execution role, and event source mappings that trigger the function.
@@ -50,10 +52,17 @@ Parameters:
   SecretsManagerArn:
     Type: String
     Description: Secrets Manager endpoint where variables for this Lambda is stored.
-
-  CodeUri:
+  #TODO Add to the readme that the lambda needs to be packaged and deployed to S3 before this can be used
+  #TODO discuss with Dev Platform if this is a feasible way of working.
+  LambdaCodeUriBucket:
     Type: String
-    Description: Can be a local file path or an S3 file path that points to the code.
+    Description: S3 code bucket for Lambda function, must come with LambdaCodeUriKey. Conflicts with CodeUri.
+    Default: ""
+  
+  LambdaCodeUriKey:
+    Type: String
+    Description: S3 code key for Lambda function, must come with LambdaCodeUriBucket. Conflicts with CodeUri.
+    Default: ""
 
   LambdaPolicies:
     Type: CommaDelimitedList
@@ -62,6 +71,20 @@ Parameters:
   Runtime:
     Type: String
     Description: Lambda runtime that relays information.
+
+  MemorySize:
+    Type: Number
+    Description: Memory to allocate to the lambda.
+    Default: 128
+    MinValue: 128
+    MaxValue: 10240
+  
+  Timeout:
+    Type: Number
+    Description: Lambdas timeout.
+    Default: 3
+    MinValue: 1
+    MaxValue: 900
 
   LambdaHandler:
     Type: String
@@ -109,9 +132,12 @@ Resources:
           !Ref SubnetIds
         SecurityGroupIds:
           !Ref SecurityGroupIds
-      CodeUri: !Ref CodeUri
-      PackageType: Zip
+      CodeUri: 
+        Bucket: !Ref LambdaCodeUriBucket
+        Key: !Ref LambdaCodeUriKey
       Runtime: !Ref Runtime
+      MemorySize: !Ref MemorySize
+      Timeout: !Ref Timeout
       Handler: !Ref LambdaHandler
       Environment:
         Variables:
@@ -183,8 +209,15 @@ Resources:
 
 Outputs:
   DeadLetterQueueARN: 
-    Description: ARN of the dead letter queue used for messages that are not processed successfully
+    Description: ARN of the dead letter queue used for messages that are not processed successfully.
     Value: 
       Fn::GetAtt: 
         - "DeadLetterQueue"
+        - "Arn"
+
+  LambdaFunctionARN: 
+    Description: ARN of the Lambda Function.
+    Value: 
+      Fn::GetAtt: 
+        - "LambdaFunction"
         - "Arn"

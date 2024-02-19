@@ -40,6 +40,8 @@ Resources:
             Resource: 
               - "arn:aws:s3:::di-central-sre-build-taskcat/*"
               - "arn:aws:s3:::di-central-sre-build-taskcat"
+              - "arn:aws:s3:::di-central-sre-build-artifacts"
+              - "arn:aws:s3:::di-central-sre-build-artifacts/*"
           - Effect: Allow
             Action:
               - "cloudformation:CreateStack"
@@ -66,8 +68,7 @@ Resources:
           - Effect: Allow
             Action:
               - "lambda:*"
-            # TODO Creation of this lambda needs to be in IaC
-            Resource: "arn:aws:lambda:eu-west-2:891376909120:function:fakeSecretRotate"
+            Resource: "arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-AZvc5k0e2IhP"
       Roles: 
         - !Ref GitHubActionsRole
       
