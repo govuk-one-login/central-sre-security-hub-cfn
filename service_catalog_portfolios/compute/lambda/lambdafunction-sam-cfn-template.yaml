@@ -16,9 +16,9 @@ Parameters:
   LambdaConcurrentExecutionsLimit: 
     Type: Number 
     Description: This is configured with a function-level concurrent execution limit that you want to reserve for the function.
-    Default: 500
-    MinValue: 500
-    MaxValue: 1000
+    Default: 10
+    MinValue: 10
+    MaxValue: 100
   
   LambdaRole:
     Type: String
@@ -26,7 +26,7 @@ Parameters:
 
   LambdaRoleNamePrefix:
     Type: String
-    Description: This is the Lambda role name
+    Description: This is the Lambda role name.
 
   FunctionLogSubscriptionFilter:
     Type: String
@@ -35,40 +35,37 @@ Parameters:
 
   SubnetIds:
     Type: CommaDelimitedList
-    Description: List of Subnet IDs for Vpc config
+    Description: List of Subnet IDs for Vpc config.
 
   SecurityGroupIds:
     Type: CommaDelimitedList
-    Description: List of Security Group IDs that control inbound and outbound traffic for the instance 
+    Description: List of Security Group IDs that control inbound and outbound traffic for the instance.
 
   LambdaLogGroupRetention:
     Type: Number
-    Description: This is the number of days to keep CloudWatch Logs
+    Description: This is the number of days to keep CloudWatch Logs.
     Default: 365
+    MinValue: 30
 
   SecretsManagerArn:
     Type: String
-    Description: Secrets Manager endpoint where variables for this Lambda is stored
+    Description: Secrets Manager endpoint where variables for this Lambda is stored.
 
-  LambdaCodeUriBucket:
+  CodeUri:
     Type: String
-    Description: S3 code bucket for Lambda function
-
-  LambdaCodeUriKey:
-    Type: String
-    Description: S3 code key for Lambda function
+    Description: Can be a local file path or an S3 file path that points to the code.
 
   LambdaPolicies:
     Type: CommaDelimitedList
-    Description: This is the permission policy for the Lambda function 
+    Description: This is the permission policy for the Lambda function.
 
   Runtime:
     Type: String
-    Description: Lambda runtime that relays information
+    Description: Lambda runtime that relays information.
 
   LambdaHandler:
     Type: String
-    Description: Lambda handler that processes events when invoked 
+    Description: Lambda handler that processes events when invoked.
 
   Environment:
     Type: String
@@ -112,9 +109,7 @@ Resources:
           !Ref SubnetIds
         SecurityGroupIds:
           !Ref SecurityGroupIds
-      CodeUri:
-        Bucket: !Ref LambdaCodeUriBucket
-        Key: !Ref LambdaCodeUriKey
+      CodeUri: !Ref CodeUri
       PackageType: Zip
       Runtime: !Ref Runtime
       Handler: !Ref LambdaHandler

@@ -5,6 +5,19 @@ resource "aws_cloudformation_stack" "build_kms_key" {
 
 resource "aws_s3_bucket" "artifacts" {
   bucket = "di-central-sre-build-artifacts"
+  object_lock_enabled = true
+  
+  tags = {
+
+  }
+}
+
+resource "aws_s3_bucket_versioning" "example" {
+  bucket = aws_s3_bucket.example.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 
 
