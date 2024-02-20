@@ -15,7 +15,22 @@ Parameters:
       - "integration"
       - "production"
     Default: "build"
- 
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+  
   AllowedAccounts:
     Description: 'List of accounts that can read the KMS Key'
     Type: CommaDelimitedList
@@ -25,7 +40,11 @@ Parameters:
     Description: 'ARN of the SNS topic'
     Type: String
     Default: ''
+<<<<<<< HEAD
   
+=======
+    
+>>>>>>> main
   Service:
     Description: 'Which AWS service is allowed to use this CMK (upper-case names define use-cases)'
     Type: String
@@ -65,7 +84,11 @@ Parameters:
     - ENCRYPT_DECRYPT
     - SIGN_VERIFY
     Default: ENCRYPT_DECRYPT
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> main
   KMSDeletionPolicy:
     Description: 'Attribute you can preserve, and in some cases, backup a resource when its stack is deleted' 
     Type: String
@@ -105,14 +128,16 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
         - Key: Product
-          Value: GOV.UK
+          Value: !Ref Product
         - Key: Name
           Value: !Join
             - "-"
             - - !Ref AWS::StackName
               - "kmskey"
-        - Key: Service
-          Value: "sre"
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: System
+          Value: !Ref System
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/encryption/kms/template.yaml"
       KeyPolicy:
