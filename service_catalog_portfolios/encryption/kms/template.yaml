@@ -40,11 +40,7 @@ Parameters:
     Description: 'ARN of the SNS topic'
     Type: String
     Default: ''
-<<<<<<< HEAD
   
-=======
-    
->>>>>>> main
   Service:
     Description: 'Which AWS service is allowed to use this CMK (upper-case names define use-cases)'
     Type: String
@@ -84,11 +80,7 @@ Parameters:
     - ENCRYPT_DECRYPT
     - SIGN_VERIFY
     Default: ENCRYPT_DECRYPT
-<<<<<<< HEAD
-
-=======
   
->>>>>>> main
   KMSDeletionPolicy:
     Description: 'Attribute you can preserve, and in some cases, backup a resource when its stack is deleted' 
     Type: String
