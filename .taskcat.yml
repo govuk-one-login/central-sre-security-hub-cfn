@@ -34,24 +34,16 @@ tests:
     parameters:
       SecretName: taskcat-<hash-place-holder>-secret
       SecretDescription: "A secret tested by taskcat"
-      PeriodicRotationDays: 90
-      KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-AZvc5k0e2IhP
-      KmsKeyId: bdfc7df5-95ae-426b-b520-80c3d434ae52
-      NotifyAfterUnusedForDays: 90
-    template: ./service_catalog_portfolios/storage/elb=access-logs-bucket.yaml
+    template: ./service_catalog_portfolios/storage/elb-access-logs-bucket.yaml
 
 
   # for s3 the environemnt needs to be dev
   # there are two files to test
   # s3 path is ./service_catalog_portfolios/storage/
-  test-s3:
+  test-s3_logging:
     parameters:
       SecretName: taskcat-<hash-place-holder>-secret
       SecretDescription: "A secret tested by taskcat"
-      PeriodicRotationDays: 90
-      KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-AZvc5k0e2IhP
-      KmsKeyId: bdfc7df5-95ae-426b-b520-80c3d434ae52
-      NotifyAfterUnusedForDays: 90
     template: ./service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml
 
   
