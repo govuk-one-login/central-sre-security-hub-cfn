@@ -1,7 +1,15 @@
 #!/bin/bash
 region=eu-west-2
 delay=30
-taskcat test run --no-delete
+taskcat test run --no-delete &> taskcat-output
+cat taskcat-output
+if grep -Fxq "ERROR" taskcat-output
+then
+    echo ""
+else
+    echo "TaskCat ran into an issue."
+    exit 1
+fi
 echo "giving security hub ${delay}s to run..."
 sleep $delay
 echo "continuing..."
