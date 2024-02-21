@@ -28,7 +28,7 @@ tests:
       DynamoTableName: Taskcat-<hash-place-holder>-table
       TableKMSKey: bdfc7df5-95ae-426b-b520-80c3d434ae52
       System: taskcat-<hash-place-holder> 
-    template: ./service_catalog_portfolios/storage/template.yaml
+    template: ./service_catalog_portfolios/storage/dynamo/template.yaml
 
   ## s3
   test-s3:
@@ -36,7 +36,7 @@ tests:
       S3BucketName: taskcat-<hash-place-holder>-secret
       SecretDescription: "A secret tested by taskcat"
       System: taskcat-<hash-place-holder> 
-    template: ./service_catalog_portfolios/storage/elb-access-logs-bucket.yaml
+    template: ./service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml
 
 
 
