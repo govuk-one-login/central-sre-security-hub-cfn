@@ -43,3 +43,7 @@ jobs:
       - name: Run TaskCat
         run: |
           ./build/scripts/run_taskcat.sh
+
+      - name: Handle FileNotFoundError
+        if: ${{ failure() && contains(run.outputs['validate-stack'], 'FileNotFoundError') }}
+        run: ./handle_error.sh  
