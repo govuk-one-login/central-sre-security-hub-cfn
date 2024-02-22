@@ -18,11 +18,7 @@ tests:
   ## SNS you need to do twice once for FIFO and once for normal
 
   # storage
-
   ## dynamodb
-  
-
-
   test-dynamodb:
     parameters:
       DynamoTableName: Taskcat-<hash-place-holder>-table
@@ -34,22 +30,18 @@ tests:
   test-s3:
     parameters:
       S3BucketName: taskcat-<hash-place-holder>-secret
+      ELBAccessLogsBucketName: di-central-sre-build-access-logs
+      S3ServerAccessLogsBucket: di-central-sre-build-access-logs
       SecretDescription: "A secret tested by taskcat"
       System: taskcat-<hash-place-holder> 
     template: ./service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml
 
-
-
-  # for s3 the environemnt needs to be dev
-  # there are two files to test
-  # s3 path is ./service_catalog_portfolios/storage/
   test-s3-logging:
     parameters:
       S3BucketName: taskcat-<hash-place-holder>-secret
       SecretDescription: "A secret tested by taskcat"
       System: taskcat-<hash-place-holder>
     template: ./service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml
-
   
   ## secrets manager
   test-secrets-manager:
