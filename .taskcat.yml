@@ -24,6 +24,8 @@ tests:
       DynamoTableName: Taskcat-<hash-place-holder>-table
       TableKMSKey: bdfc7df5-95ae-426b-b520-80c3d434ae52
       System: taskcat-<hash-place-holder> 
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
     template: ./service_catalog_portfolios/storage/dynamo/template.yaml
 
   ## s3
@@ -33,7 +35,9 @@ tests:
       ELBAccessLogsBucketName: di-central-sre-build-access-logs
       S3ServerAccessLogsBucket: di-central-sre-build-access-logs
       SecretDescription: "A secret tested by taskcat"
-      System: taskcat-<hash-place-holder> 
+      System: taskcat-<hash-place-holder>
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
     template: ./service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml
 
   test-s3-logging:
@@ -41,6 +45,8 @@ tests:
       S3BucketName: taskcat-<hash-place-holder>-secret
       SecretDescription: "A secret tested by taskcat"
       System: taskcat-<hash-place-holder>
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
     template: ./service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml
   
   ## secrets manager
@@ -51,4 +57,7 @@ tests:
       KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-AZvc5k0e2IhP
       KmsKeyId: bdfc7df5-95ae-426b-b520-80c3d434ae52
       NotifyAfterUnusedForDays: 90
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+      System: taskcat-<hash-place-holder>
     template: ./service_catalog_portfolios/storage/secrets-manager/template.yaml
