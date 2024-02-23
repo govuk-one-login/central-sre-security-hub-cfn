@@ -6,7 +6,7 @@ cat taskcat-output
 if grep -Fq "ERROR" taskcat-output
 then
     echo "TaskCat threw an Error."
-    #taskcat test clean ALL --region eu-west-2
+    taskcat test clean ALL --region eu-west-2
     exit 1
 else
     echo ""
@@ -15,7 +15,7 @@ fi
 if grep -Fq "WARN" taskcat-output
 then
     echo "TaskCat issued a Warning."
-    #taskcat test clean ALL --region eu-west-2
+    taskcat test clean ALL --region eu-west-2
     exit 1
 else
     echo ""
@@ -86,7 +86,7 @@ do
 done
 
 # clean up the test stacks
-#taskcat test clean ALL --region eu-west-2
+taskcat test clean ALL --region eu-west-2
 
 if [ "$failure_flag" -eq "1" ]; then
     exit 1
