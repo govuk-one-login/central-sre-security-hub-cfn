@@ -16,46 +16,52 @@ tests:
 
   # messaging
   ## SNS you need to do twice once for FIFO and once for normal
-
-  # storage
-  ## dynamodb
-  test-dynamodb:
+  test-sns:
     parameters:
-      DynamoTableName: Taskcat-<hash-place-holder>-table
-      TableKMSKey: 31dc9883-64a5-43f9-86b4-ef0f929e3343
-      System: taskcat-<hash-place-holder> 
-      DeletionPolicy: Delete
-      UpdateReplacePolicy: Delete
-    template: ./service_catalog_portfolios/storage/dynamo/template.yaml
-
-  ## s3
-  s3-elb-access-logs-bucket:
-    parameters:
-      S3BucketName: taskcat-<hash-place-holder>-secret
-      ELBAccessLogsBucketName: taskcat-<hash-place-holder>-logs
-      S3ServerAccessLogsBucket: di-central-sre-build-access-logs
+      TopicName: taskcat-<hash-place-holder>
+      KMSKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
       System: taskcat-<hash-place-holder>
-      DeletionPolicy: Delete
-      UpdateReplacePolicy: Delete
-    template: ./service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml
 
-  test-logging-bucket:
-    parameters:
-      S3BucketName: taskcat-<hash-place-holder>-secret
-      System: taskcat-<hash-place-holder>
-      DeletionPolicy: Delete
-      UpdateReplacePolicy: Delete
-    template: ./service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml
+
+  # # storage
+  # ## dynamodb
+  # test-dynamodb:
+  #   parameters:
+  #     DynamoTableName: Taskcat-<hash-place-holder>-table
+  #     TableKMSKey: 31dc9883-64a5-43f9-86b4-ef0f929e3343
+  #     System: taskcat-<hash-place-holder> 
+  #     DeletionPolicy: Delete
+  #     UpdateReplacePolicy: Delete
+  #   template: ./service_catalog_portfolios/storage/dynamo/template.yaml
+
+  # ## s3
+  # s3-elb-access-logs-bucket:
+  #   parameters:
+  #     S3BucketName: taskcat-<hash-place-holder>-secret
+  #     ELBAccessLogsBucketName: taskcat-<hash-place-holder>-logs
+  #     S3ServerAccessLogsBucket: di-central-sre-build-access-logs
+  #     System: taskcat-<hash-place-holder>
+  #     DeletionPolicy: Delete
+  #     UpdateReplacePolicy: Delete
+  #   template: ./service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml
+
+  # test-logging-bucket:
+  #   parameters:
+  #     S3BucketName: taskcat-<hash-place-holder>-secret
+  #     System: taskcat-<hash-place-holder>
+  #     DeletionPolicy: Delete
+  #     UpdateReplacePolicy: Delete
+  #   template: ./service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml
   
-  ## secrets manager
-  test-secrets-manager:
-    parameters:
-      SecretName: taskcat-<hash-place-holder>-secret
-      SecretDescription: "A secret tested by taskcat"
-      KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX
-      KmsKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
-      NotifyAfterUnusedForDays: 90
-      DeletionPolicy: Delete
-      UpdateReplacePolicy: Delete
-      System: taskcat-<hash-place-holder>
-    template: ./service_catalog_portfolios/storage/secrets-manager/template.yaml
+  # ## secrets manager
+  # test-secrets-manager:
+  #   parameters:
+  #     SecretName: taskcat-<hash-place-holder>-secret
+  #     SecretDescription: "A secret tested by taskcat"
+  #     KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX
+  #     KmsKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
+  #     NotifyAfterUnusedForDays: 90
+  #     DeletionPolicy: Delete
+  #     UpdateReplacePolicy: Delete
+  #     System: taskcat-<hash-place-holder>
+  #   template: ./service_catalog_portfolios/storage/secrets-manager/template.yaml

@@ -76,6 +76,8 @@ Resources:
               - "kms:CancelKeyDeletion"
               - "kms:TagResource"
               - "lambda:AddPermission"
+              - "iam:CreateRole"
+              - "iam:DeleteRole"
               - "s3:*"
               - "secretsmanager:CancelRotateSecret"
               - "secretsmanager:CreateSecret"
@@ -84,6 +86,11 @@ Resources:
               - "secretsmanager:RotateSecret"
               - "secretsmanager:TagResource"
               - "securityhub:GetFindings"
+              - "sns:CreateTopic"
+              - "sns:DeleteTopic"
+              - "sns:ListTagsForResource"
+              - "sns:TagResource"
+              - "sns:UntagResource"
             Resource: "*"
           - Effect: Allow
             Action:

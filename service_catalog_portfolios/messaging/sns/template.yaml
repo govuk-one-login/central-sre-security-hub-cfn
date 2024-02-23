@@ -15,11 +15,11 @@ Parameters:
   
   FifoEnabled:
     Description: "Do you want to enable FIFO (first in, first out ordering) mode for this topic? [true, false]"
-    Default: false
+    Default: "false"
     Type: String
     AllowedValues:
-       - true
-       - false
+       - "true"
+       - "false"
   
   KMSKeyId:
     Description: "It is mandatory to provide a KMS key ID to encrypt this topic at rest. This ID must exist in the account which you are deploying to."
@@ -67,8 +67,6 @@ Conditions:
 
 Resources:
   SNSTopic:
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
     Type: AWS::SNS::Topic
     Properties:
       FifoTopic: !Ref FifoEnabled
