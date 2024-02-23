@@ -15,11 +15,11 @@ Parameters:
 
   ContributorInsightsEnabled:
     Description: "Do you want to enable Cloudwatch Contributor Insights? [true or false]"
-    Default: false
+    Default: "false"
     Type: String
     AllowedValues:
-       - true
-       - false
+       - "true"
+       - "false"
 
   TableKMSKey:
     Description: "It is mandatory to provide a KMS key ID to encrypt this table at rest. This ID must exist in the account which you are deploying to."
@@ -29,11 +29,11 @@ Parameters:
     Description: "Do you want to enable the database to be run in provisioned throughput mode? [true or false]
                   Dynamo Naturally throttles reads and writes above 40k capacity units / second per table and 80k capacity units / second per account. 
                   If you enable provisioned throughput please also configure target and minimum and maxium values for read, write autoscaling."
-    Default: false
+    Default: "false"
     Type: String
     AllowedValues:
-         - true
-         - false
+         - "true"
+         - "false"
 
   TargetReadCapacity:
     Description: "The target number of reads consumed per second. Dynamo Naturally throttles reads on 40k per table and 80k per account."
@@ -95,11 +95,11 @@ Parameters:
   
   SortKeyEnabled:
     Description: "Would you like to add a second partion key as the sort key? [true or false]"
-    Default: false
+    Default: "false"
     Type: String
     AllowedValues:
-         - true
-         - false
+         - "true"
+         - "false"
 
   SortKeyName:
     Description: "The Name of your sort key for the table."
@@ -119,11 +119,11 @@ Parameters:
   
   TimeToLiveEnabled:
     Type: String
-    Default: true
+    Default: "true"
     Description: "Do you want to enable time to live for this table? [true or false]"
     AllowedValues:
-      - true
-      - false
+      - "true"
+      - "false"
 
   TimeToLiveColumnName:
     Type: String

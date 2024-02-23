@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "artifacts" {
-  bucket = "di-central-sre-build-artifacts"
+  bucket = "di-central-sre-build-artifact"
   
   tags = {
     Product = "GOV.UK"

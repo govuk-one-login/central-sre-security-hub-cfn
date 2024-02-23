@@ -3,13 +3,24 @@ region=eu-west-2
 delay=30
 taskcat test run --no-delete &> taskcat-output
 cat taskcat-output
-if grep -Fxq "ERROR" taskcat-output
+if grep -Fq "ERROR" taskcat-output
 then
-    echo ""
-else
-    echo "TaskCat ran into an issue."
+    echo "TaskCat threw an Error."
+    taskcat test clean ALL --region eu-west-2
     exit 1
+else
+    echo ""
 fi
+
+if grep -Fq "WARN" taskcat-output
+then
+    echo "TaskCat issued a Warning."
+    taskcat test clean ALL --region eu-west-2
+    exit 1
+else
+    echo ""
+fi
+
 echo "giving security hub ${delay}s to run..."
 sleep $delay
 echo "continuing..."
@@ -19,7 +30,7 @@ echo "Getting them stacks..."
 # Search by custom tag (could also search by stack name prefix)
 stacks=($(aws cloudformation describe-stacks \
     --region $region \
-    --query "Stacks[?Tags[?Key == 'TestingFramework' && Value == 'taskcat-<hash-place-holder>']].{StackName: StackName}" \
+    --query "Stacks[?Tags[?Key == 'TestingFramework' && Value == 'taskcat-abc123']].{StackName: StackName}" \
     --output text))
 for stack in "${stacks[@]}"
 do 
@@ -29,7 +40,6 @@ do
     stackdir=$stacksdir/$stack
     mkdir $stackdir
     echo "Getting the stack resources..."
-    #resources=($(sort -u resources)) gives us unique entries
     resources=($(aws cloudformation list-stack-resources \
         --stack-name $stack \
         --region $region \
@@ -65,14 +75,15 @@ do
   failure=$(cat $f | jq '.[] | select(.Status == "FAILED")')
   if [ -n "$failure" ]; then
     echo ""
-    echo "${f} has failing Security Hub rules"
     echo ""
-    echo $failure
+    echo "${f} has failing Security Hub rules:"
+    echo ""
+    cat $f | jq '.[] | select(.Status == "FAILED")'
+    echo ""
+    echo ""
     failure_flag=1
   fi
 done
-
-echo $failure_flag
 
 # clean up the test stacks
 taskcat test clean ALL --region eu-west-2

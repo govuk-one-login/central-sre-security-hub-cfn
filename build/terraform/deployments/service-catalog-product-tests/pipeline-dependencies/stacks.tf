@@ -1,3 +1,15 @@
+module "github-identity" {
+  source     = "git@github.com:govuk-one-login/ipv-terraform-modules.git//secure-pipeline/github-identity-provider"
+  stack_name = "github-identity-build"
+  parameters = {
+    Environment = "build"
+  }
+
+  tags = {
+    System = "Central SRE"
+  }
+}
+
 module "vpc" {
   source           = "git@github.com:govuk-one-login/ipv-terraform-modules.git//secure-pipeline/vpc"
   stack_name       = "vpc-sc-product-test"

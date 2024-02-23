@@ -40,8 +40,8 @@ Resources:
             Resource: 
               - "arn:aws:s3:::di-central-sre-build-taskcat/*"
               - "arn:aws:s3:::di-central-sre-build-taskcat"
-              - "arn:aws:s3:::di-central-sre-build-artifacts"
-              - "arn:aws:s3:::di-central-sre-build-artifacts/*"
+              - "arn:aws:s3:::di-central-sre-build-artifact"
+              - "arn:aws:s3:::di-central-sre-build-artifact/*"
           - Effect: Allow
             Action:
               - "cloudformation:CreateStack"
@@ -56,6 +56,7 @@ Resources:
               - "kms:CreateKey"
               - "kmms:DeleteAlias"
               - "kms:ScheduleKeyDeletion"
+              - "kms:TagResource"
               - "lambda:AddPermission"
               - "s3:GetBucketLocation"
               - "s3:ListAllMyBuckets"
@@ -70,11 +71,11 @@ Resources:
           - Effect: Allow
             Action:
               - "kms:*"
-            Resource: "arn:aws:kms:eu-west-2:891376909120:key/bdfc7df5-95ae-426b-b520-80c3d434ae52"
+            Resource: "arn:aws:kms:eu-west-2:891376909120:key/31dc9883-64a5-43f9-86b4-ef0f929e3343"
           - Effect: Allow
             Action:
               - "lambda:*"
-            Resource: "arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-AZvc5k0e2IhP"
+            Resource: "arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX"
       Roles: 
         - !Ref GitHubActionsRole
       

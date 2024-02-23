@@ -24,17 +24,12 @@ jobs:
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE }}
           aws-region: eu-west-2
       
-      - name: Validate AWS CloudFormation stack
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://service_catalog_portfolios/storage/secrets-manager/template.yaml
-      
       - name: Generate and apply hash
         run: |
           hash=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 13; echo)
           echo $hash
-          sed -i "s/<hash-place-holder>/$hash/g" .taskcat.yml
-          sed -i "s/<hash-place-holder>/$hash/g" build/scripts/run_taskcat.sh
+          sed -i "s/abc123/$hash/g" .taskcat.yml
+          sed -i "s/abc123/$hash/g" build/scripts/run_taskcat.sh
 
       - name: Install TaskCat
         run: |
