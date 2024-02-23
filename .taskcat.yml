@@ -5,7 +5,7 @@ general:
   artifact_regions:
     - eu-west-2
   tags:
-      TestingFramework: taskcat-<hash-place-holder>
+      TestingFramework: taskcat-abc123
 
 project:
   owner: di-central-sre-build
@@ -18,18 +18,18 @@ tests:
   ## SNS you need to do twice once for FIFO and once for normal
   test-sns:
     parameters:
-      TopicName: taskcat-<hash-place-holder>
+      TopicName: taskcat-abc123
       KMSKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
-      System: taskcat-<hash-place-holder>
+      System: taskcat-abc123
     template: ./service_catalog_portfolios/messaging/sns/template.yaml
 
   # # storage
   # ## dynamodb
   # test-dynamodb:
   #   parameters:
-  #     DynamoTableName: Taskcat-<hash-place-holder>-table
+  #     DynamoTableName: Taskcat-abc123-table
   #     TableKMSKey: 31dc9883-64a5-43f9-86b4-ef0f929e3343
-  #     System: taskcat-<hash-place-holder> 
+  #     System: taskcat-abc123 
   #     DeletionPolicy: Delete
   #     UpdateReplacePolicy: Delete
   #   template: ./service_catalog_portfolios/storage/dynamo/template.yaml
@@ -37,18 +37,18 @@ tests:
   # ## s3
   # s3-elb-access-logs-bucket:
   #   parameters:
-  #     S3BucketName: taskcat-<hash-place-holder>-secret
-  #     ELBAccessLogsBucketName: taskcat-<hash-place-holder>-logs
+  #     S3BucketName: taskcat-abc123-secret
+  #     ELBAccessLogsBucketName: taskcat-abc123-logs
   #     S3ServerAccessLogsBucket: di-central-sre-build-access-logs
-  #     System: taskcat-<hash-place-holder>
+  #     System: taskcat-abc123
   #     DeletionPolicy: Delete
   #     UpdateReplacePolicy: Delete
   #   template: ./service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml
 
   # test-logging-bucket:
   #   parameters:
-  #     S3BucketName: taskcat-<hash-place-holder>-secret
-  #     System: taskcat-<hash-place-holder>
+  #     S3BucketName: taskcat-abc123-secret
+  #     System: taskcat-abc123
   #     DeletionPolicy: Delete
   #     UpdateReplacePolicy: Delete
   #   template: ./service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml
@@ -56,12 +56,12 @@ tests:
   # ## secrets manager
   # test-secrets-manager:
   #   parameters:
-  #     SecretName: taskcat-<hash-place-holder>-secret
+  #     SecretName: taskcat-abc123-secret
   #     SecretDescription: "A secret tested by taskcat"
   #     KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX
   #     KmsKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
   #     NotifyAfterUnusedForDays: 90
   #     DeletionPolicy: Delete
   #     UpdateReplacePolicy: Delete
-  #     System: taskcat-<hash-place-holder>
+  #     System: taskcat-abc123
   #   template: ./service_catalog_portfolios/storage/secrets-manager/template.yaml
