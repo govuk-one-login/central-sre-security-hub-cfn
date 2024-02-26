@@ -30,7 +30,7 @@ echo "Getting them stacks..."
 # Search by custom tag (could also search by stack name prefix)
 stacks=($(aws cloudformation describe-stacks \
     --region $region \
-    --query "Stacks[?Tags[?Key == 'TestingFramework' && Value == 'taskcat-abc123']].{StackName: StackName}" \
+    --query "Stacks[?Tags[?Key == 'TestingFramework' && Value == 'taskcat-<hash-place-holder>']].{StackName: StackName}" \
     --output text))
 for stack in "${stacks[@]}"
 do 
