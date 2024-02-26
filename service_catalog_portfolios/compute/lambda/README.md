@@ -24,7 +24,7 @@ Teams can input custom values into parameters to create or update stack:
   - Lambda Role
   - LambdaRoleNamePrefix
   - Runtime
-  - Secrets Manager Arn
+  - SSM Parameter Arn
   - Security Group Ids
   - Subnet Ids
 
