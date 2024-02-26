@@ -29,6 +29,7 @@ Parameters:
   LambdaRoleNamePrefix:
     Type: String
     Description: This is the Lambda role name.
+    Default: ""
 
   FunctionLogSubscriptionFilter:
     Type: String
@@ -67,6 +68,7 @@ Parameters:
   LambdaPolicies:
     Type: CommaDelimitedList
     Description: This is the permission policy for the Lambda function.
+    Default: ""
 
   Runtime:
     Type: String
@@ -158,8 +160,7 @@ Resources:
         Variables:
           SSMArn:
             !Ref SecretsManagerArn
-      Policies:
-        LambdaPolicies: !Ref LambdaPolicies
+      Policies: !Ref LambdaPolicies
     Tags:
       - Key: StackName
         Value: !Sub "${AWS::StackName}"
@@ -204,7 +205,7 @@ Resources:
   DeadLetterQueue: 
     Type: AWS::SQS::Queue
     Properties: 
-      QueueName: !Sub "${AWS::StackName}-LambdaFunction-DLQ"
+      QueueName: !Sub "${AWS::StackName}"
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"

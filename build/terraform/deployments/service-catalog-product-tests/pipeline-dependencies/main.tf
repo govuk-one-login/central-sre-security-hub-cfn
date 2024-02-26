@@ -13,7 +13,7 @@ resource "aws_secretsmanager_secret" "empty_lambdas_config" {}
 
 resource "aws_cloudformation_stack" "empty_lambda_security_group" {
   name          = "sc-product-test-empty-lambda-sec-group"
-  template_body = file("${path.module}/../../../../../service_catalog_portfolios/compute/lambda/lambdafunction-securitygroup-vpc-egress-template.yaml")
+  template_body = file("${path.module}/../../../../../service_catalog_portfolios/compute/lambda/securitygroup-vpc-egress-template.yaml")
 
   parameters = {
     VpcId   = module.vpc.stack_outputs.VpcId
@@ -28,7 +28,7 @@ resource "aws_cloudformation_stack" "empty_lambda" {
   depends_on = [aws_s3_object.empty_lambda]
 
   name          = "sc-product-test-empty-lambda"
-  template_body = file("${path.module}/../../../../../service_catalog_portfolios/compute/lambda/lambdafunction-sam-cfn-template.yaml")
+  template_body = file("${path.module}/../../../../../service_catalog_portfolios/compute/lambda/sam-cfn-template.yaml")
 
   parameters = {
     LambdaRole              = aws_iam_role.empty_lambda.name
@@ -57,4 +57,15 @@ resource "aws_cloudformation_stack" "taskcat_test_sns" {
     System    = "taskcat"
   }
   capabilities = ["CAPABILITY_IAM"]
+}
+
+resource "aws_cloudformation_stack" "taskcat_lambada_secgroup" {
+  name          = "sc-product-test-secgroup"
+  template_body = file("${path.module}/../../../../../service_catalog_portfolios/compute/lambda/securitygroup-vpc-egress-template.yaml")
+  parameters = {
+    VpcId   = module.vpc.stack_outputs.VpcId
+    VpcCidr = module.vpc.stack_outputs.VpcCidr
+    System  = "taskcat"
+  }
+  capabilities = ["CAPABILITY_AUTO_EXPAND"]
 }

@@ -98,7 +98,12 @@ Resources:
               - "sns:ListTagsForResource"
               - "sns:Subscribe"
               - "sns:TagResource"
+              - "sns:Unsubscribe"
               - "sns:UntagResource"
+              - "sqs:CreateQueue"
+              - "sqs:DeleteQueue"
+              - "sqs:TagQueue"
+              - "sqs:UntagQueue"
             Resource: "*"
           - Effect: Allow
             Action:
