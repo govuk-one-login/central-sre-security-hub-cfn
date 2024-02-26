@@ -96,6 +96,7 @@ Resources:
               - "sns:DeleteTopic"
               - "sns:GetTopicAttributes"
               - "sns:ListTagsForResource"
+              - "sns:Subscribe"
               - "sns:TagResource"
               - "sns:UntagResource"
             Resource: "*"

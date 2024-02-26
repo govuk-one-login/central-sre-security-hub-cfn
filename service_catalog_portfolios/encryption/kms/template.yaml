@@ -14,7 +14,7 @@ Parameters:
       - "staging"
       - "integration"
       - "production"
-    Default: "build"
+    Default: "dev"
 
   Product:
     Type: String
@@ -81,7 +81,7 @@ Parameters:
     - SIGN_VERIFY
     Default: ENCRYPT_DECRYPT
   
-  KMSDeletionPolicy:
+  DeletionPolicy:
     Description: 'Attribute you can preserve, and in some cases, backup a resource when its stack is deleted' 
     Type: String
     AllowedValues:
@@ -89,7 +89,7 @@ Parameters:
     - Delete
     Default: Retain
   
-  KMSUpdateReplacePolicy:
+  UpdateReplacePolicy:
     Description: 'Attribute to retain or, in some cases, backup the existing physical instance of a resource when it is replaced during a stack update operation.' 
     Type: String
     AllowedValues:
@@ -109,8 +109,8 @@ Conditions:
 
 Resources:
   Key:
-    DeletionPolicy: !Ref KMSDeletionPolicy
-    UpdateReplacePolicy: !Ref KMSUpdateReplacePolicy
+    DeletionPolicy: !Ref DeletionPolicy
+    UpdateReplacePolicy: !Ref UpdateReplacePolicy
     Type: 'AWS::KMS::Key'
     Properties:
       EnableKeyRotation: true
@@ -250,8 +250,8 @@ Resources:
             - !Ref AWS::NoValue
 
   KeyAlias:
-    DeletionPolicy: !Ref KMSDeletionPolicy
-    UpdateReplacePolicy: !Ref KMSUpdateReplacePolicy
+    DeletionPolicy: !Ref DeletionPolicy
+    UpdateReplacePolicy: !Ref UpdateReplacePolicy
     Type: 'AWS::KMS::Alias'
     Properties:
       AliasName: !Sub 'alias/${AWS::StackName}'
