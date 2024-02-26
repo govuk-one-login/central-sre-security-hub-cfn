@@ -9,6 +9,6 @@ output "build_kms_key_arn" {
 }
 
 output "empty_lambda_arn" {
-  description = "The ARN of the empty lambda"
-  value = aws_cloudformation_stack.empty_lambda.outputs.LambdaFunctionARN
+  description = "The ARN of the empty lambda."
+  value       = aws_cloudformation_stack.empty_lambda.outputs.LambdaFunctionARN
 }

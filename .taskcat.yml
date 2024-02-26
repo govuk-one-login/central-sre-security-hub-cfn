@@ -15,13 +15,19 @@ project:
 tests:
 
   # messaging
-  ## SNS you need to do twice once for FIFO and once for normal
-  test-sns:
+  # test-sns:
+  #   parameters:
+  #     TopicName: taskcat-<hash-place-holder>
+  #     KMSKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
+  #     System: taskcat-<hash-place-holder>
+  #   template: ./service_catalog_portfolios/messaging/sns/template.yaml
+
+  test-sns-subscription:
     parameters:
-      TopicName: taskcat-<hash-place-holder>
-      KMSKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
+      TopicArn: arn:aws:sns:eu-west-2:891376909120:taskcat-topic
+      SubscriberArn: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX
       System: taskcat-<hash-place-holder>
-    template: ./service_catalog_portfolios/messaging/sns/template.yaml
+    template: ./service_catalog_portfolios/messaging/sns-subscription/template.yaml
 
   # # storage
   # ## dynamodb

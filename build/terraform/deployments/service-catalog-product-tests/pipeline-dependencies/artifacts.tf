@@ -1,11 +1,11 @@
 resource "aws_s3_bucket" "artifacts" {
   bucket = "di-central-sre-build-artifact"
-  
+
   tags = {
-    Product = "GOV.UK"
-    System = "Central-SRE-build-service"
+    Product     = "GOV.UK"
+    System      = "Central-SRE-build-service"
     Environment = "build"
-    Owner = "Central-SRE"
+    Owner       = "Central-SRE"
   }
 }
 
@@ -32,7 +32,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "artifacts" {
   bucket = aws_s3_bucket.artifacts.id
 
   rule {
-    id = "BucketExpiry"
+    id     = "BucketExpiry"
     status = "Enabled"
     expiration {
       days = 365
@@ -56,6 +56,6 @@ resource "aws_s3_object" "empty_lambda" {
   key    = "python/empty-lambda.zip"
   source = data.local_file.empty_lambda_zip.filename
 
-  object_lock_mode = "COMPLIANCE"
+  object_lock_mode              = "COMPLIANCE"
   object_lock_retain_until_date = "2025-02-19T12:00:00Z"
 }

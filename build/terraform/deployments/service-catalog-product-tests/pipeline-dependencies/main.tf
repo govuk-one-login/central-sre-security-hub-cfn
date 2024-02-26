@@ -16,7 +16,7 @@ resource "aws_cloudformation_stack" "empty_lambda_security_group" {
   template_body = file("${path.module}/../../../../../service_catalog_portfolios/compute/lambda/lambdafunction-securitygroup-vpc-egress-template.yaml")
 
   parameters = {
-    VpcId = module.vpc.stack_outputs.VpcId
+    VpcId   = module.vpc.stack_outputs.VpcId
     VpcCidr = module.vpc.stack_outputs.VpcCidr
   }
 
@@ -25,25 +25,36 @@ resource "aws_cloudformation_stack" "empty_lambda_security_group" {
 
 resource "aws_cloudformation_stack" "empty_lambda" {
 
-  depends_on = [ aws_s3_object.empty_lambda ]
+  depends_on = [aws_s3_object.empty_lambda]
 
   name          = "sc-product-test-empty-lambda"
   template_body = file("${path.module}/../../../../../service_catalog_portfolios/compute/lambda/lambdafunction-sam-cfn-template.yaml")
 
   parameters = {
-    LambdaRole           = aws_iam_role.empty_lambda.name
-    LambdaRoleNamePrefix = ""
-    SubnetIds = "${module.vpc.stack_outputs.PrivateSubnetIdA},${module.vpc.stack_outputs.PrivateSubnetIdB}"
-    SecurityGroupIds = "${aws_cloudformation_stack.empty_lambda_security_group.outputs.SecurityGroup}"
+    LambdaRole              = aws_iam_role.empty_lambda.name
+    LambdaRoleNamePrefix    = ""
+    SubnetIds               = "${module.vpc.stack_outputs.PrivateSubnetIdA},${module.vpc.stack_outputs.PrivateSubnetIdB}"
+    SecurityGroupIds        = "${aws_cloudformation_stack.empty_lambda_security_group.outputs.SecurityGroup}"
     LambdaLogGroupRetention = 30
-    SecretsManagerArn = aws_secretsmanager_secret.empty_lambdas_config.arn
-    LambdaCodeUriBucket = aws_s3_bucket.artifacts.id
-    LambdaCodeUriKey = aws_s3_object.empty_lambda.key
-    LambdaPolicies = ""
-    Runtime = "python3.11"
-    LambdaHandler = "handler.process"
-    Environment = "build"
+    SecretsManagerArn       = aws_secretsmanager_secret.empty_lambdas_config.arn
+    LambdaCodeUriBucket     = aws_s3_bucket.artifacts.id
+    LambdaCodeUriKey        = aws_s3_object.empty_lambda.key
+    LambdaPolicies          = ""
+    Runtime                 = "python3.11"
+    LambdaHandler           = "handler.process"
+    Environment             = "build"
   }
 
-   capabilities = ["CAPABILITY_AUTO_EXPAND"]
+  capabilities = ["CAPABILITY_AUTO_EXPAND"]
+}
+
+resource "aws_cloudformation_stack" "taskcat_test_sns" {
+  name          = "sc-product-test-sns"
+  template_body = file("${path.module}/../../../../../service_catalog_portfolios/messaging/sns/template.yaml")
+  parameters = {
+    TopicName = "taskcat-topic"
+    KMSKeyId  = aws_cloudformation_stack.build_kms_key.outputs.KeyId
+    System    = "taskcat"
+  }
+  capabilities = ["CAPABILITY_IAM"]
 }
