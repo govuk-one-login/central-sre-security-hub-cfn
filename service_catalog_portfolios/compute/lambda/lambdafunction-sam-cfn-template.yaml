@@ -46,9 +46,9 @@ Parameters:
     Description: This is the number of days to keep CloudWatch Logs
     Default: 365
 
-  SecretsManagerArn:
+  SSMParameterArn:
     Type: String
-    Description: Secrets Manager endpoint where variables for this Lambda is stored
+    Description: SSM parameter that holds the lambdas config, this can foward onto Secrets Manager
 
   LambdaCodeUriBucket:
     Type: String
@@ -135,8 +135,8 @@ Resources:
       Handler: !Ref LambdaHandler
       Environment:
         Variables:
-          SSMArn:
-            !Ref SecretsManagerArn
+          ParameterArn: 
+            !Ref SSMParameterArn 
       Policies:
         LambdaPolicies: !Ref LambdaPolicies
     Tags:
