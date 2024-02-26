@@ -146,9 +146,11 @@ Resources:
     Properties:
       AliasName: !Sub "alias/${S3BucketName}-kms-key"
       TargetKeyId: !Ref KMSKey
-
+  
   S3Bucket: 
     Type: AWS::S3::Bucket
+    # This is the logging bucket
+    # checkov:skip=CKV_AWS_18     
     DeletionPolicy: !Ref DeletionPolicy
     UpdateReplacePolicy: !Ref UpdateReplacePolicy
     Properties:

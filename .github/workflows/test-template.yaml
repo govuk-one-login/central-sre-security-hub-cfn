@@ -24,6 +24,13 @@ jobs:
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE }}
           aws-region: eu-west-2
       
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: service_catalog_portfolios/
+          quiet: true 
+          skip_check: CKV_AWS_111,CKV_AWS_173,CKV_AWS_158,CKV_AWS_27
+      
       - name: Generate and apply hash
         run: |
           hash=$(tr -dc 'a-z0-9' </dev/urandom | head -c 13; echo)

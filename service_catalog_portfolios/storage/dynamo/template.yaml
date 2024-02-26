@@ -301,13 +301,11 @@ Resources:
               - "sts:AssumeRole"
       Path: "/"
       Policies:
-        -
-          PolicyName: "root"
+        - PolicyName: "root"
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
-              -
-                Effect: "Allow"
+              - Effect: "Allow"
                 Action:
                   - "dynamodb:DescribeTable"
                   - "dynamodb:UpdateTable"
@@ -315,7 +313,7 @@ Resources:
                   - "cloudwatch:DescribeAlarms"
                   - "cloudwatch:GetMetricStatistics"
                   - "cloudwatch:SetAlarmState"
-                  - "cloudwatch:DeleteAlarms"
+                  - "cloudwatch:DeleAlaterms"
                 Resource: "*"
       Tags:
         - Key: StackName
