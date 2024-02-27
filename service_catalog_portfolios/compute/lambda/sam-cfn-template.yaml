@@ -50,11 +50,10 @@ Parameters:
     Default: 365
     MinValue: 30
 
-  SecretsManagerArn:
+  SSMParameterArn:
     Type: String
-    Description: Secrets Manager endpoint where variables for this Lambda is stored.
-  #TODO Add to the readme that the lambda needs to be packaged and deployed to S3 before this can be used
-  #TODO discuss with Dev Platform if this is a feasible way of working.
+    Description: SSM parameter that holds the lambdas config, this can foward onto Secrets Manager
+
   LambdaCodeUriBucket:
     Type: String
     Description: S3 code bucket for Lambda function, must come with LambdaCodeUriKey. Conflicts with CodeUri.
@@ -158,8 +157,8 @@ Resources:
       Handler: !Ref LambdaHandler
       Environment:
         Variables:
-          SSMArn:
-            !Ref SecretsManagerArn
+          ParameterArn: 
+            !Ref SSMParameterArn 
       Policies: !Ref LambdaPolicies
     Tags:
       - Key: StackName
