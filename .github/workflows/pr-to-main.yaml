@@ -1,6 +1,12 @@
-name: Lint and AWS CloudFormation Validate
+name: PR To Main
+# When a PR is opened, synchronize, or reopened this workflow will run.
+# Make sure the service catalog templates are checkov and security hub complaint.
+# Taskcat validates and   
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -13,11 +19,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
+      - name: Validate CloudFormation templates
+        run: |
+          for f in $(find ./service_catalog_portfolios -name '*.yaml')
+          do
+            echo 
+            aws cloudformation validate-template --template-body file://$f
+          done
+          
       - name: Set up AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
