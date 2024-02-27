@@ -9,7 +9,7 @@ general:
 
 project:
   owner: di-central-sre-build
-  name: security-hub-template-tests
+  name: sec-hub-templates
   package_lambda: false
   
 tests:
@@ -21,7 +21,7 @@ tests:
       LambdaRole: iam-for-empty-lambda
       SubnetIds: subnet-0a1c19ce3ee6b2d50,subnet-0e2e55747c817abac
       SecurityGroupIds: "sg-05fa01fdf5d0dd615"
-      SecretsManagerArn: arn:aws:secretsmanager:eu-west-2:891376909120:secret:terraform-20240222170217389100000001-yES23Q
+      SSMParameterArn: arn:aws:ssm:eu-west-2:891376909120:parameter/empty-lambda-config
       LambdaCodeUriBucket: di-central-sre-build-artifact
       LambdaCodeUriKey: python/empty-lambda.zip
       Runtime: python3.11

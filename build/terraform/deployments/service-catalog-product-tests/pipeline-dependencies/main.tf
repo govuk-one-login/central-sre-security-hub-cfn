@@ -8,8 +8,11 @@ resource "aws_iam_role" "empty_lambda" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-#TODO should be replaced by SSM parameter as part of SW-184
-resource "aws_secretsmanager_secret" "empty_lambdas_config" {}
+resource "aws_ssm_parameter" "empty_lambdas_config" {
+  name  = "empty-lambda-config"
+  type  = "String"
+  value = "CONFIG!!!"
+}
 
 resource "aws_cloudformation_stack" "empty_lambda_security_group" {
   name          = "sc-product-test-empty-lambda-sec-group"
@@ -36,7 +39,7 @@ resource "aws_cloudformation_stack" "empty_lambda" {
     SubnetIds               = "${module.vpc.stack_outputs.PrivateSubnetIdA},${module.vpc.stack_outputs.PrivateSubnetIdB}"
     SecurityGroupIds        = "${aws_cloudformation_stack.empty_lambda_security_group.outputs.SecurityGroup}"
     LambdaLogGroupRetention = 30
-    SecretsManagerArn       = aws_secretsmanager_secret.empty_lambdas_config.arn
+    SSMParameterArn         = aws_ssm_parameter.empty_lambdas_config.arn
     LambdaCodeUriBucket     = aws_s3_bucket.artifacts.id
     LambdaCodeUriKey        = aws_s3_object.empty_lambda.key
     LambdaPolicies          = ""
