@@ -113,5 +113,6 @@ Resources:
       FunctionName: !Ref KeyRotationLambdaARN
       Action: lambda:InvokeFunction
       Principal: secretsmanager.amazonaws.com
+      SourceAccount: !Ref "AWS::AccountId"
 
 

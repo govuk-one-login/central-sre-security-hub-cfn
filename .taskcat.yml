@@ -1,0 +1,127 @@
+general:
+  s3_bucket: "di-central-sre-build-taskcat"
+  regions:
+   - eu-west-2
+  artifact_regions:
+    - eu-west-2
+  tags:
+      TestingFramework: taskcat-<hash-place-holder>
+
+project:
+  owner: di-central-sre-build
+  name: sec-hub-templates
+  package_lambda: false
+  
+tests:
+
+  # compute
+  ## lambda
+  test-lambda:
+    parameters:
+      LambdaRole: iam-for-empty-lambda
+      SubnetIds: subnet-0a1c19ce3ee6b2d50,subnet-0e2e55747c817abac
+      SecurityGroupIds: "sg-05fa01fdf5d0dd615"
+      SSMParameterArn: arn:aws:ssm:eu-west-2:891376909120:parameter/empty-lambda-config
+      LambdaCodeUriBucket: di-central-sre-build-artifact
+      LambdaCodeUriKey: python/empty-lambda.zip
+      Runtime: python3.11
+      LambdaHandler: handler.process
+      System: taskcat-<hash-place-holder>
+      LambdaRoleNamePrefix: ""
+    template: ./service_catalog_portfolios/compute/lambda/sam-cfn-template.yaml
+  
+  test-lambda-secgroup-gateway-endpoint-prefix:
+    parameters:
+      System: taskcat-<hash-place-holder>
+      VpcId: vpc-0eae4806e2b8bba13
+      VpcCidr: 10.0.0.0/16
+    template: ./service_catalog_portfolios/compute/lambda/securitygroup-dynamodb-s3-global-egress-template.yaml
+  
+  test-lambda-secgroup-global:
+    parameters:
+      System: taskcat-<hash-place-holder>
+      VpcId: vpc-0eae4806e2b8bba13
+      VpcCidr: 10.0.0.0/16
+    template: ./service_catalog_portfolios/compute/lambda/securitygroup-global-egress-template.yaml
+
+  test-lambda-secgroup-tcp-ssh-global:
+    parameters:
+      System: taskcat-<hash-place-holder>
+      VpcId: vpc-0eae4806e2b8bba13
+      VpcCidr: 10.0.0.0/16
+    template: ./service_catalog_portfolios/compute/lambda/securitygroup-ssh-tcp-global-egress-template.yaml
+  
+  test-lambda-secgroup-vpc-egress:
+    parameters:
+      System: taskcat-<hash-place-holder>
+      VpcId: vpc-0eae4806e2b8bba13
+      VpcCidr: 10.0.0.0/16
+    template: ./service_catalog_portfolios/compute/lambda/securitygroup-ssh-tcp-global-egress-template.yaml
+
+  # encryption
+  ## kms
+  test-kms:
+    parameters:
+      System: taskcat-<hash-place-holder>
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+    template: ./service_catalog_portfolios/encryption/kms/template.yaml
+
+  # messaging
+  ## sns
+  test-sns:
+    parameters:
+      TopicName: taskcat-<hash-place-holder>
+      KMSKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
+      System: taskcat-<hash-place-holder>
+    template: ./service_catalog_portfolios/messaging/sns/template.yaml
+
+  test-sns-subscription:
+    parameters:
+      TopicArn: arn:aws:sns:eu-west-2:891376909120:taskcat-topic
+      SubscriberArn: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX
+      System: taskcat-<hash-place-holder>
+    template: ./service_catalog_portfolios/messaging/sns-subscription/template.yaml
+
+  # storage
+  ## dynamodb
+  test-dynamodb:
+    parameters:
+      DynamoTableName: Taskcat-<hash-place-holder>-table
+      TableKMSKey: 31dc9883-64a5-43f9-86b4-ef0f929e3343
+      System: taskcat-<hash-place-holder> 
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+    template: ./service_catalog_portfolios/storage/dynamo/template.yaml
+
+  ## s3
+  s3-elb-access-logs-bucket:
+    parameters:
+      S3BucketName: taskcat-<hash-place-holder>-secret
+      ELBAccessLogsBucketName: taskcat-<hash-place-holder>-logs
+      S3ServerAccessLogsBucket: di-central-sre-build-access-logs
+      System: taskcat-<hash-place-holder>
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+    template: ./service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml
+
+  test-logging-bucket:
+    parameters:
+      S3BucketName: taskcat-<hash-place-holder>-secret
+      System: taskcat-<hash-place-holder>
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+    template: ./service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml
+  
+  ## secrets manager
+  test-secrets-manager:
+    parameters:
+      SecretName: taskcat-<hash-place-holder>-secret
+      SecretDescription: "A secret tested by taskcat"
+      KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX
+      KmsKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
+      NotifyAfterUnusedForDays: 90
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+      System: taskcat-<hash-place-holder>
+    template: ./service_catalog_portfolios/storage/secrets-manager/template.yaml

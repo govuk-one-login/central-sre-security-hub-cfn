@@ -14,7 +14,7 @@ Parameters:
       - "staging"
       - "integration"
       - "production"
-    Default: "build"
+    Default: "dev"
 
   Product:
     Type: String
@@ -40,7 +40,7 @@ Parameters:
     Description: 'ARN of the SNS topic'
     Type: String
     Default: ''
-    
+  
   Service:
     Description: 'Which AWS service is allowed to use this CMK (upper-case names define use-cases)'
     Type: String
@@ -81,7 +81,7 @@ Parameters:
     - SIGN_VERIFY
     Default: ENCRYPT_DECRYPT
   
-  KMSDeletionPolicy:
+  DeletionPolicy:
     Description: 'Attribute you can preserve, and in some cases, backup a resource when its stack is deleted' 
     Type: String
     AllowedValues:
@@ -89,7 +89,7 @@ Parameters:
     - Delete
     Default: Retain
   
-  KMSUpdateReplacePolicy:
+  UpdateReplacePolicy:
     Description: 'Attribute to retain or, in some cases, backup the existing physical instance of a resource when it is replaced during a stack update operation.' 
     Type: String
     AllowedValues:
@@ -98,19 +98,19 @@ Parameters:
     Default: Retain
 
 Conditions:
-      HasServiceAllServices: !Equals [!Ref Service, 'ALL_SERVICES']
-      HasServiceS3PublicAccess: !Equals [!Ref Service, 'S3_PUBLIC_ACCESS']
-      HasServiceRoute53Dnssec: !Or [!Equals [!Ref Service, 'ROUTE53_DNSSEC'], !Equals [!Ref Service, 'dnssec-route53']]
-      HasServiceCloudFront: !Equals [!Ref Service, 'CLOUDFRONT']
-      HasServiceCloudTrail: !Equals [!Ref Service, 'CLOUDTRAIL']
-      HasService: !Not [!Or [!Condition HasServiceAllServices, !Condition HasServiceS3PublicAccess, !Condition HasServiceRoute53Dnssec, !Condition HasServiceCloudFront, !Condition HasServiceCloudTrail]]
-      HasAlertTopic: !Not [!Equals [!Ref AlertTopicARN, '']]
-      AllowedAccountsNotEmpty: !Not [!Equals [!Join ["", !Ref AllowedAccounts], ""]]      
+  HasServiceAllServices: !Equals [!Ref Service, 'ALL_SERVICES']
+  HasServiceS3PublicAccess: !Equals [!Ref Service, 'S3_PUBLIC_ACCESS']
+  HasServiceRoute53Dnssec: !Or [!Equals [!Ref Service, 'ROUTE53_DNSSEC'], !Equals [!Ref Service, 'dnssec-route53']]
+  HasServiceCloudFront: !Equals [!Ref Service, 'CLOUDFRONT']
+  HasServiceCloudTrail: !Equals [!Ref Service, 'CLOUDTRAIL']
+  HasService: !Not [!Or [!Condition HasServiceAllServices, !Condition HasServiceS3PublicAccess, !Condition HasServiceRoute53Dnssec, !Condition HasServiceCloudFront, !Condition HasServiceCloudTrail]]
+  HasAlertTopic: !Not [!Equals [!Ref AlertTopicARN, '']]
+  AllowedAccountsNotEmpty: !Not [!Equals [!Join ["", !Ref AllowedAccounts], ""]]      
 
 Resources:
   Key:
-    DeletionPolicy: !Ref KMSDeletionPolicy
-    UpdateReplacePolicy: !Ref KMSUpdateReplacePolicy
+    DeletionPolicy: !Ref DeletionPolicy
+    UpdateReplacePolicy: !Ref UpdateReplacePolicy
     Type: 'AWS::KMS::Key'
     Properties:
       EnableKeyRotation: true
@@ -132,7 +132,6 @@ Resources:
           Value: !Ref System
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/encryption/kms/template.yaml"
-
       KeyPolicy:
         Version: '2012-10-17'
         Statement:
@@ -251,8 +250,8 @@ Resources:
             - !Ref AWS::NoValue
 
   KeyAlias:
-    DeletionPolicy: !Ref KMSDeletionPolicy
-    UpdateReplacePolicy: !Ref KMSUpdateReplacePolicy
+    DeletionPolicy: !Ref DeletionPolicy
+    UpdateReplacePolicy: !Ref UpdateReplacePolicy
     Type: 'AWS::KMS::Alias'
     Properties:
       AliasName: !Sub 'alias/${AWS::StackName}'
@@ -279,7 +278,6 @@ Resources:
       Targets:
       - Arn: !Ref AlertTopicARN
         Id: rule
-
 
 Outputs:
   TemplateID:

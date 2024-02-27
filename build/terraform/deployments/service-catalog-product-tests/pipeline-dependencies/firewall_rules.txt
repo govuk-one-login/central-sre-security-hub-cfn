@@ -1,0 +1,1 @@
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; dotprefix; content:".amazonaws.com"; endswith; msg:"Pass TLS to .amazonaws.com"; sid:2008; rev:1;)

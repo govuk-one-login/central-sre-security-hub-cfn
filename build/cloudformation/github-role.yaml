@@ -1,0 +1,146 @@
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template for creating github deployment role.
+
+Resources:
+
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IAM role to be assumed by GitHub for deployments.
+      RoleName: github-deployment-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: !ImportValue GitHubIdentityProviderArn
+            Condition:
+              StringLike:
+                token.actions.githubusercontent.com:sub: repo:govuk-one-login/central-sre-security-hub-cfn:*
+
+  GitHubActionsRoleIamPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: github-deployment-role-policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cloudformation:ValidateTemplate"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+              - "s3:ListBucket"
+              - "s3:DeleteObject"
+            Resource: 
+              - "arn:aws:s3:::di-central-sre-build-taskcat/*"
+              - "arn:aws:s3:::di-central-sre-build-taskcat"
+              - "arn:aws:s3:::di-central-sre-build-artifact"
+              - "arn:aws:s3:::di-central-sre-build-artifact/*"
+          - Effect: Allow
+            Action:
+              - "cloudformation:CreateStack"
+              - "cloudformation:CreateChangeSet"
+              - "cloudformation:DeleteChangeSet"
+              - "cloudformation:DeleteStack"
+              - "cloudformation:DescribeStacks"
+              - "cloudformation:DescribeStackEvents"
+              - "cloudformation:ListStacks"
+              - "cloudformation:ListStackResources"
+              - "cloudformation:UpdateStack"
+              - "cloudformation:ValidateTemplate"
+              - "dynamodb:DescribeTable"
+              - "dynamodb:CreateTable"
+              - "dynamodb:DeleteTable"
+              - "dynamodb:DescribeContinuousBackups"
+              - "dynamodb:DescribeTimeToLive"
+              - "dynamodb:ListTagsOfResource"
+              - "dynamodb:UpdateContinuousBackups"
+              - "dynamodb:UpdateTimeToLive"
+              - "dynamodb:TagResource"
+              - "dynamodb:UntagResource"
+              - "ec2:AuthorizeSecurityGroupEgress"
+              - "ec2:AuthorizeSecurityGroupIngress"
+              - "ec2:CreateNetworkInterface"
+              - "ec2:CreateSecurityGroup"
+              - "ec2:CreateTags"
+              - "ec2:DeleteNetworkInterface"
+              - "ec2:DeleteSecurityGroup"
+              - "ec2:DescribeSecurityGroups"
+              - "ec2:DescribeSubnets"
+              - "ec2:DescribeVpcs"
+              - "ec2:RevokeSecurityGroupEgress"
+              - "kms:Create*"
+              - "kms:Describe*"
+              - "kms:Enable*"
+              - "kms:List*"
+              - "kms:Put*"
+              - "kms:Update*"
+              - "kms:Revoke*"
+              - "kms:Disable*"
+              - "kms:Get*"
+              - "kms:Delete*"
+              - "kms:ScheduleKeyDeletion"
+              - "kms:CancelKeyDeletion"
+              - "kms:TagResource"
+              - "lambda:AddPermission"
+              - "lambda:CreateFunction"
+              - "lambda:DeleteFunction"
+              - "lambda:GetFunction"
+              - "lambda:PutFunctionConcurrency"
+              - "lambda:TagResource"
+              - "lambda:UntagResource"
+              - "logs:CreateLogGroup"
+              - "logs:DeleteLogGroup"
+              - "logs:DeleteRetentionPolicy"
+              - "logs:PutRetentionPolicy"
+              - "logs:TagResource"
+              - "logs:UntagResource"
+              - "iam:CreateRole"
+              - "iam:DeleteRole"
+              - "iam:DeleteRolePolicy"
+              - "iam:GetRole"
+              - "iam:GetRolePolicy"
+              - "iam:PassRole"
+              - "iam:PutRolePolicy"
+              - "iam:TagRole"
+              - "iam:UntagRole"
+              - "s3:*"
+              - "secretsmanager:CancelRotateSecret"
+              - "secretsmanager:CreateSecret"
+              - "secretsmanager:DeleteSecret"
+              - "secretsmanager:DescribeSecret"
+              - "secretsmanager:RotateSecret"
+              - "secretsmanager:TagResource"
+              - "securityhub:GetFindings"
+              - "sns:CreateTopic"
+              - "sns:DeleteTopic"
+              - "sns:GetTopicAttributes"
+              - "sns:ListTagsForResource"
+              - "sns:Subscribe"
+              - "sns:TagResource"
+              - "sns:Unsubscribe"
+              - "sns:UntagResource"
+              - "sqs:CreateQueue"
+              - "sqs:DeleteQueue"
+              - "sqs:GetQueueAttributes"
+              - "sqs:TagQueue"
+              - "sqs:UntagQueue"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "kms:*"
+            Resource: "arn:aws:kms:eu-west-2:891376909120:key/31dc9883-64a5-43f9-86b4-ef0f929e3343"
+          - Effect: Allow
+            Action:
+              - "lambda:*"
+            Resource: "arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX"
+      Roles: 
+        - !Ref GitHubActionsRole
+      
+    

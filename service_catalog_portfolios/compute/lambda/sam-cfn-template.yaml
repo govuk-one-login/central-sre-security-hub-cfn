@@ -1,4 +1,6 @@
-Transform: AWS::Serverless-2016-10-31
+Transform: 
+  - AWS::LanguageExtensions
+  - AWS::Serverless-2016-10-31
 
 Description: >
   This Lambda SAM CloudFormation template creates an AWS Lambda function, an AWS Identity and Access Management (IAM) execution role, and event source mappings that trigger the function.
@@ -16,9 +18,9 @@ Parameters:
   LambdaConcurrentExecutionsLimit: 
     Type: Number 
     Description: This is configured with a function-level concurrent execution limit that you want to reserve for the function.
-    Default: 500
-    MinValue: 500
-    MaxValue: 1000
+    Default: 10
+    MinValue: 10
+    MaxValue: 100
   
   LambdaRole:
     Type: String
@@ -26,7 +28,8 @@ Parameters:
 
   LambdaRoleNamePrefix:
     Type: String
-    Description: This is the Lambda role name
+    Description: This is the Lambda role name.
+    Default: ""
 
   FunctionLogSubscriptionFilter:
     Type: String
@@ -35,16 +38,17 @@ Parameters:
 
   SubnetIds:
     Type: CommaDelimitedList
-    Description: List of Subnet IDs for Vpc config
+    Description: List of Subnet IDs for Vpc config.
 
   SecurityGroupIds:
     Type: CommaDelimitedList
-    Description: List of Security Group IDs that control inbound and outbound traffic for the instance 
+    Description: List of Security Group IDs that control inbound and outbound traffic for the instance.
 
   LambdaLogGroupRetention:
     Type: Number
-    Description: This is the number of days to keep CloudWatch Logs
+    Description: This is the number of days to keep CloudWatch Logs.
     Default: 365
+    MinValue: 30
 
   SSMParameterArn:
     Type: String
@@ -52,23 +56,40 @@ Parameters:
 
   LambdaCodeUriBucket:
     Type: String
-    Description: S3 code bucket for Lambda function
-
+    Description: S3 code bucket for Lambda function, must come with LambdaCodeUriKey. Conflicts with CodeUri.
+    Default: ""
+  
   LambdaCodeUriKey:
     Type: String
-    Description: S3 code key for Lambda function
+    Description: S3 code key for Lambda function, must come with LambdaCodeUriBucket. Conflicts with CodeUri.
+    Default: ""
 
   LambdaPolicies:
     Type: CommaDelimitedList
-    Description: This is the permission policy for the Lambda function 
+    Description: This is the permission policy for the Lambda function.
+    Default: ""
 
   Runtime:
     Type: String
-    Description: Lambda runtime that relays information
+    Description: Lambda runtime that relays information.
+
+  MemorySize:
+    Type: Number
+    Description: Memory to allocate to the lambda.
+    Default: 128
+    MinValue: 128
+    MaxValue: 10240
+  
+  Timeout:
+    Type: Number
+    Description: Lambdas timeout.
+    Default: 3
+    MinValue: 1
+    MaxValue: 900
 
   LambdaHandler:
     Type: String
-    Description: Lambda handler that processes events when invoked 
+    Description: Lambda handler that processes events when invoked.
 
   Environment:
     Type: String
@@ -127,18 +148,18 @@ Resources:
           !Ref SubnetIds
         SecurityGroupIds:
           !Ref SecurityGroupIds
-      CodeUri:
+      CodeUri: 
         Bucket: !Ref LambdaCodeUriBucket
         Key: !Ref LambdaCodeUriKey
-      PackageType: Zip
       Runtime: !Ref Runtime
+      MemorySize: !Ref MemorySize
+      Timeout: !Ref Timeout
       Handler: !Ref LambdaHandler
       Environment:
         Variables:
           ParameterArn: 
             !Ref SSMParameterArn 
-      Policies:
-        LambdaPolicies: !Ref LambdaPolicies
+      Policies: !Ref LambdaPolicies
     Tags:
       - Key: StackName
         Value: !Sub "${AWS::StackName}"
@@ -183,7 +204,7 @@ Resources:
   DeadLetterQueue: 
     Type: AWS::SQS::Queue
     Properties: 
-      QueueName: !Sub "${AWS::StackName}-LambdaFunction-DLQ"
+      QueueName: !Sub "${AWS::StackName}"
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"
@@ -243,8 +264,15 @@ Resources:
 
 Outputs:
   DeadLetterQueueARN: 
-    Description: ARN of the dead letter queue used for messages that are not processed successfully
+    Description: ARN of the dead letter queue used for messages that are not processed successfully.
     Value: 
       Fn::GetAtt: 
         - "DeadLetterQueue"
+        - "Arn"
+
+  LambdaFunctionARN: 
+    Description: ARN of the Lambda Function.
+    Value: 
+      Fn::GetAtt: 
+        - "LambdaFunction"
         - "Arn"
