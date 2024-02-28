@@ -18,9 +18,9 @@ Parameters:
   LambdaConcurrentExecutionsLimit: 
     Type: Number 
     Description: This is configured with a function-level concurrent execution limit that you want to reserve for the function.
-    Default: 10
-    MinValue: 10
-    MaxValue: 100
+    Default: 50
+    MinValue: 1
+    MaxValue: 350
   
   LambdaRole:
     Type: String
@@ -52,7 +52,7 @@ Parameters:
 
   SSMParameterArn:
     Type: String
-    Description: SSM parameter that holds the lambdas config, this can foward onto Secrets Manager
+    Description: SSM parameter that holds the lambdas config, this can forward onto Secrets Manager
 
   LambdaCodeUriBucket:
     Type: String
