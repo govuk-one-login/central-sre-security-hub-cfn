@@ -1,0 +1,250 @@
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  This Lambda SAM CloudFormation template creates an AWS Lambda function, an AWS Identity and Access Management (IAM) execution role, and event source mappings that trigger the function.
+  It checks if the Lambda function is configured with a function-level concurrent execution limit,
+  It checks if the template is configured with a dead letter queue, 
+  It checks if the AWS Lambda function policy attached to the Lambda resource prohibits public access,
+  It checks if a Lambda function is allowed access to a virtual private cloud (VPC),
+  It checks if Lambda has more than 1 availability zone associated with the Lambda.
+  central-sre-security-hub-cfn lambda cloudformation template version: v0.0.1
+  Enforces: security hub rule(s) LMDA02, LMDA03, LMDA05.
+  Supports: security hub rule(s) LMDA04, LMDA06. 
+  Managed by: central-sre.
+
+Parameters:
+  LambdaConcurrentExecutionsLimit: 
+    Type: Number 
+    Description: This is configured with a function-level concurrent execution limit that you want to reserve for the function.
+    Default: 50
+    MinValue: 1
+    MaxValue: 350
+  
+  LambdaRole:
+    Type: String
+    Description: The name of an existing IAM Role to use in Lambdas Instance Profile, that grants the function permission to access AWS services and resources.
+
+  LambdaRoleNamePrefix:
+    Type: String
+    Description: This is the Lambda role name
+
+  FunctionLogSubscriptionFilter:
+    Type: String
+    Description: This resource specifies a subscription filter and associates it with the specified log group. Consists of a pattern for filtering which log events are delivered to the Lambda resource.
+    Default: "arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2"
+
+  SubnetIds:
+    Type: CommaDelimitedList
+    Description: List of Subnet IDs for Vpc config
+
+  SecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: List of Security Group IDs that control inbound and outbound traffic for the instance 
+
+  LambdaLogGroupRetention:
+    Type: Number
+    Description: This is the number of days to keep CloudWatch Logs
+    Default: 365
+
+  SSMParameterArn:
+    Type: String
+    Description: SSM parameter that holds the lambdas config, this can forward onto Secrets Manager
+
+  LambdaCodeUriBucket:
+    Type: String
+    Description: S3 code bucket for Lambda function
+
+  LambdaCodeUriKey:
+    Type: String
+    Description: S3 code key for Lambda function
+
+  LambdaPolicies:
+    Type: CommaDelimitedList
+    Description: This is the permission policy for the Lambda function 
+
+  Runtime:
+    Type: String
+    Description: Lambda runtime that relays information
+
+  LambdaHandler:
+    Type: String
+    Description: Lambda handler that processes events when invoked 
+
+  Environment:
+    Type: String
+    Description: Name of environment you are deploying into and the value for the tag environment to be added to all resources.
+    Default: dev
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+  
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+Conditions:
+  CentralisedLoggingLambdaFunction:
+    !Or [
+      !Equals [!Ref Environment, production],
+      !Equals [!Ref Environment, integration],
+      !Equals [!Ref Environment, staging],
+      !Equals [!Ref Environment, build]
+    ]
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Serverless::Function 
+    DependsOn: LambdaExecutionPolicy
+    Properties:
+      Role:
+        Fn::Join:
+            - ""
+            - - "arn:aws:iam::"
+              - !Ref "AWS::AccountId"
+              - ":role/"
+              - !Ref LambdaRoleNamePrefix
+              - !Ref LambdaRole
+      ReservedConcurrentExecutions: !Ref LambdaConcurrentExecutionsLimit
+      DeadLetterQueue: 
+        TargetArn: !GetAtt DeadLetterQueue.Arn
+        Type: SQS
+      VpcConfig:
+        SubnetIds:
+          !Ref SubnetIds
+        SecurityGroupIds:
+          !Ref SecurityGroupIds
+      CodeUri:
+        Bucket: !Ref LambdaCodeUriBucket
+        Key: !Ref LambdaCodeUriKey
+      PackageType: Zip
+      Runtime: !Ref Runtime
+      Handler: !Ref LambdaHandler
+      Environment:
+        Variables:
+          ParameterArn: 
+            !Ref SSMParameterArn 
+      Policies:
+        LambdaPolicies: !Ref LambdaPolicies
+    Tags:
+      - Key: StackName
+        Value: !Sub "${AWS::StackName}"
+      - Key: Product
+        Value: !Ref Product
+      - Key: System
+        Value: !Ref System
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: Owner
+        Value: !Ref Owner
+      - Key: Source
+        Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-sam-cfn-template.yaml"
+
+  LambdaFunctionLogGroup: 
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${AWS::StackName}-LogGroup"
+      RetentionInDays: !Ref LambdaLogGroupRetention
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-sam-cfn-template.yaml"
+
+  LambdaFunctionLogSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Condition: CentralisedLoggingLambdaFunction
+    Properties:
+      DestinationArn: !Ref FunctionLogSubscriptionFilter
+      FilterPattern: ""
+      LogGroupName: !Ref LambdaFunctionLogGroup
+
+  DeadLetterQueue: 
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: !Sub "${AWS::StackName}-LambdaFunction-DLQ"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-sam-cfn-template.yaml"
+
+
+  DenyPublicAccessPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Deny
+            Action: "*"
+            Resource: !GetAtt LambdaFunction.Arn
+            Condition: 
+              ArnNotLike: 
+                "aws:SourceArn": !Sub "arn:aws:*:*:${AWS::AccountId}:*"
+      PolicyName: !Sub "DenyPublicAccessPolicy-${AWS::StackName}"
+      RoleName: !Ref LambdaRole
+
+  LambdaExecutionPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: 
+              - sqs:SendMessage
+              - sqs:SendMessageBatch
+            Resource:
+              !GetAtt DeadLetterQueue.Arn
+          - Effect: Allow
+            Action: sqs:ListQueues
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "ec2:DescribeNetworkInterfaces"
+              - "ec2:CreateNetworkInterface"
+              - "ec2:DeleteNetworkInterface"
+              - "ec2:DescribeInstances"
+              - "ec2:AttachNetworkInterface"
+            Resource: "*"
+      PolicyName: !Sub "LambdaExecutionPolicy-${AWS::StackName}"
+      RoleName: !Ref LambdaRole
+
+
+Outputs:
+  DeadLetterQueueARN: 
+    Description: ARN of the dead letter queue used for messages that are not processed successfully
+    Value: 
+      Fn::GetAtt: 
+        - "DeadLetterQueue"
+        - "Arn"
