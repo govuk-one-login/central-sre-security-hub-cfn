@@ -200,9 +200,86 @@ Resources:
       Description: "Service Catalog compliant storage resources"
       DisplayName: "Storage"
 
+  Dynamodb:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "DynamoDD - v0.0.1"
+      Description: "DynamoDB product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/storage/dynamo/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/storage/dynamo/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
 
+  DynamodbAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManageStorage
+      ProductId: !Ref Dynamodb
 
-####################################
-# Outputs
-####################################
-# Outputs:
+  S3ElbAccessLogsBucket:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "S3 ELB Access Logs Bucket - v0.0.1"
+      Description: "S3 ELB Access logs bucket for the logging bucket look at deploying 'S3 Logging Bucket' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/storage/s3/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  S3ElbAccessLogsBucketAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManageStorage
+      ProductId: !Ref S3ElbAccessLogsBucket
+
+  S3LoggingBucket:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "S3 Loggging Bucket - v0.0.1"
+      Description: "S3 Loggging Bucket product, deploy once per account. For more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/storage/s3/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  S3LoggingBucketAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManageStorage
+      ProductId: !Ref S3LoggingBucket
+
+  SecretsManagerSecret:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Secrets Manager Secret - v0.0.1"
+      Description: "Secrets Manager Secret product."
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/storage/secrets-manager/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  SecretsManagerSecretAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManageStorage
+      ProductId: !Ref SecretsManagerSecret
