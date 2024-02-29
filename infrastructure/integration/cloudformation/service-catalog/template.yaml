@@ -171,6 +171,27 @@ Resources:
     Properties:
       PortfolioId: !Ref ManagedMessaging
       ProductId: !Ref Sns
+
+  SnsSubscription:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "SNS Topic - v0.0.1"
+      Description: "SNS Topic Subscription product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/messaging/sns-subscription/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/messaging/sns-subscription/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  SnsSubscriptionAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedMessaging
+      ProductId: !Ref SnsSubscription
   
   ManageStorage:
     Type: AWS::ServiceCatalog::Portfolio
@@ -179,66 +200,6 @@ Resources:
       Description: "Service Catalog compliant storage resources"
       DisplayName: "Storage"
 
-  
-
-  SCCProduct7:
-    Type: AWS::ServiceCatalog::CloudFormationProduct
-    Properties:
-      Name: "permissions-boundary-cri"
-      Description: "codestar"
-      Owner: "CRI"
-      SourceConnection:
-        ConnectionParameters:
-          CodeStar:
-            ArtifactPath: "products/permissions-boundary2/template.yaml"
-            Branch: "permissions-boundary"
-            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
-            Repository: "govuk-one-login/devplatform-service-catalog-poc"
-        Type: CODESTAR
-
-  SCCProduct8:
-    Type: AWS::ServiceCatalog::CloudFormationProduct
-    Properties:
-      Name: "permissions-boundary-kiwi"
-      Description: "codestar"
-      Owner: "KIWI"
-      SourceConnection:
-        ConnectionParameters:
-          CodeStar:
-            ArtifactPath: "products/permissions-boundary2/template.yaml"
-            Branch: "permissions-boundary"
-            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
-            Repository: "govuk-one-login/devplatform-service-catalog-poc"
-        Type: CODESTAR
-
-  SCPortfolioProductAssociation1:
-    Type: AWS::ServiceCatalog::PortfolioProductAssociation
-    # DependsOn: ServiceCatalogCloudFormationProduct
-    Properties:
-      PortfolioId: !Ref SCPortfolioBaseAccount
-      ProductId: !Ref SCCProduct1
-
-  
-
-  SCPortfolioProductAssociation3:
-    Type: AWS::ServiceCatalog::PortfolioProductAssociation
-    # DependsOn: ServiceCatalogCloudFormationProduct
-    Properties:
-      PortfolioId: !Ref SCPortfolioBaseAccount
-      ProductId: !Ref SCCProduct3
-
-  SCPortfolioProductAssociation7:
-    Type: AWS::ServiceCatalog::PortfolioProductAssociation
-    # DependsOn: ServiceCatalogCloudFormationProduct
-    Properties:
-      PortfolioId: !Ref SCPortfoliocri
-      ProductId: !Ref SCCProduct7
-
-  # SCCustomTagOptionsAssociation:
-  #   Type: AWS::ServiceCatalog::TagOptionAssociation
-  #   Properties:
-  #     TagOptionId: !Ref ServiceCatalogProductTagOptions
-  #     ResourceId: !Ref ServiceCatalogCloudFormationProduct
 
 
 ####################################
