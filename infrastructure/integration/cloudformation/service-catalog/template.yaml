@@ -122,6 +122,27 @@ Resources:
       ProviderName: "Central SRE"
       Description: "Service Catalog compliant encryption resources"
       DisplayName: "Encryption"
+
+  Kms:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "KMS key - v0.0.1"
+      Description: "KMS key product"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/encryption/kms/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  KmsAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedEncryption
+      ProductId: !Ref Kms
   
   ManagedMessaging:
     Type: AWS::ServiceCatalog::Portfolio
@@ -129,6 +150,27 @@ Resources:
       ProviderName: "Central SRE"
       Description: "Service Catalog compliant messaging resources"
       DisplayName: "Messaging"
+
+  Sns:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "SNS Topic - v0.0.1"
+      Description: "SNS Topic product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/messaging/sns/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/messaging/sns/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  SnsAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedMessaging
+      ProductId: !Ref Sns
   
   ManageStorage:
     Type: AWS::ServiceCatalog::Portfolio
