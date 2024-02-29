@@ -2,7 +2,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   This Security Group template is for Security Group Ingress rules and Security Group Egress rules,
   allowing inbound traffic from vpc cidr to port 443 and allowing outbound HTTPS traffic to Internet via port 443.
-  PreFix List Id has an outbound of security group rules permitting instances from DynamoDB and S3 endpoints via port 443. 
+  PreFix List Id outbounds for DynamoDB and S3 endpoints via port 443. 
   Managed by: central-sre.
 
 Parameters:
@@ -44,27 +44,27 @@ Resources:
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: This acts as a virtual firewall for your EC2 instances to control incoming and outgoing traffic for Lambda Security group ruleset
+      GroupDescription: Lambda Security group ruleset.
       SecurityGroupIngress:
         - CidrIp:
             !Ref VpcCidr
-          Description: Adds ingress rule to security groups which permits instances to receive traffic from vpc cidr to port 443
+          Description: TCP HTTPS inbound to VPC.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
       SecurityGroupEgress: 
         - CidrIp: 0.0.0.0/0
-          Description: Adds egress rules to security groups which permits instances to receive outbound HTTPS traffic to Internet globally
+          Description: TCP HTTPS outbound to the internet.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
         - DestinationPrefixListId: "pl-b3a742da"
-          Description: This creates an outbound security group rule that allows traffic from a VPC to DynamoDB endpoint
+          Description: TCP HTTPS outbound to VPC DynamoDB endpoint.
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
         - DestinationPrefixListId: "pl-7ca54015"
-          Description: This creates an outbound security group rule that allows traffic from a VPC to S3 endpoint
+          Description: TCP HTTPS outbound to VPC S3 endpoint.
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
@@ -82,7 +82,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-securitygroup-dynamodb-s3-global-egress-template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/secgroup-https-tcp-dynamodb-s3-global-egress.yaml"
       
 Outputs:
   SecurityGroup: 

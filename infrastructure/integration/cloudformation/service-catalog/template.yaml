@@ -11,7 +11,7 @@ Resources:
       Description: "Service Catalog compliant compute resources"
       DisplayName: "Compute"
   
-  lambda:
+  Lambda:
     Type: AWS::ServiceCatalog::CloudFormationProduct
     Properties:
       Name: "Lambda Function - v0.0.1"
@@ -25,6 +25,96 @@ Resources:
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
+
+  LambdaAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref Lambda
+
+  LambdaSecGroupConfigurableGlobalEgress:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Security Group configurable egress port and protocol - v0.0.1"
+      Description: "Lambda Security Group configurable egress port and protocol to be used in conjuction with the 'Lambda Function' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-global-egress.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaSecGroupConfigurableGlobalEgressAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref LambdaSecGroupConfigurableGlobalEgress
+
+  LambdaSecGroupGatewayEndpoints:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Security Group Gateway endpoints egress - v0.0.1"
+      Description: "Lambda Security Group Gateway endpoints egress to be used in conjuction with the 'Lambda Function' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-dynamodb-s3-global-egress.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaSecGroupGatewayEndpointsAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref LambdaSecGroupGatewayEndpoints
+
+  LambdaSecGroupGlobalEgress:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Security Group tcp https egress to the internet - v0.0.1"
+      Description: "Lambda Security Group tcp https regress to the internet to be used in conjuction with the 'Lambda Function' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-global-egress.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaSecGroupGlobalEgressAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref LambdaSecGroupGlobalEgress
+
+  LambdaSecGroupVpcEgress:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Security Group tcp https egress to the vpc - v0.0.1"
+      Description: "Lambda Security Group tcp https egress to the vpc to be used in conjuction with the 'Lambda Function' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-vpc-egress.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaSecGroupVpcEgressAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref LambdaSecGroupVpcEgress
 
   ManagedEncryption:
     Type: AWS::ServiceCatalog::Portfolio
@@ -86,12 +176,7 @@ Resources:
       PortfolioId: !Ref SCPortfolioBaseAccount
       ProductId: !Ref SCCProduct1
 
-  SCPortfolioProductAssociation2:
-    Type: AWS::ServiceCatalog::PortfolioProductAssociation
-    # DependsOn: ServiceCatalogCloudFormationProduct
-    Properties:
-      PortfolioId: !Ref SCPortfolioBaseAccount
-      ProductId: !Ref SCCProduct2
+  
 
   SCPortfolioProductAssociation3:
     Type: AWS::ServiceCatalog::PortfolioProductAssociation

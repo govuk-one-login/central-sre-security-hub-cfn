@@ -1,7 +1,7 @@
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  This Security Group template is for Security Group Ingress rules and Security Group Egress VPC rules,
-  allowing inbound traffic from vpc cidr to port 443 and allowing outbound HTTPS traffic to vpc cidr from port 443.
+  This Security Group template is for Security Group Ingress rules and Security Group Egress Global rules,
+  Allowing inbound tcp traffic from vpc cidr range on port 443. Outbound rules can be configured, default of 443 and tcp. Set ToPort, FromPort and IpProtocol to -1 to allow all protocols and ports.
   Managed by: central-sre.
 
 Parameters:
@@ -11,8 +11,23 @@ Parameters:
 
   VpcCidr:
     Type: String
-    Description: List of Vpc Cidr for Security Group 
-  
+    Description: List of Vpc Cidr for Security Group
+
+  FromPort:
+    Type: Number
+    Description: Configure the outbound from port, default of 443 set to -1 for all ports
+    Default: 443
+
+  IpProtocol:
+    Type: String
+    Description: Configure the outbound protocol, default of tcp, set to -1 for all protocols 
+    Default: tcp
+
+  ToPort:
+    Type: Number
+    Description: Configure the outbound to port, default of 443 set to -1 for all ports
+    Default: 443
+
   Environment:
     Type: String
     Description: Name of environment you are deploying into and the value for the tag environment to be added to all resources.
@@ -38,26 +53,25 @@ Parameters:
     Type: String
     Default: Central-SRE
     Description: "Tag all your resources with the team name."
-
+  
 Resources:
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: This acts as a virtual firewall for your EC2 instances to control incoming and outgoing traffic for Lambda Security group ruleset
+    Properties: 
+      GroupDescription: Lambda Security group ruleset.
       SecurityGroupIngress:
         - CidrIp:
             !Ref VpcCidr
-          Description: Adds ingress rule to security groups which permits instances to receive traffic from vpc cidr to port 443
+          Description: TCP HTTPS inbound to VPC.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
-      SecurityGroupEgress:
-        - CidrIp: 
-            !Ref VpcCidr
-          Description: Adds egress rule to security groups which permits HTTPS traffic to VPC Cidr via port 443
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443 
+      SecurityGroupEgress: 
+        - CidrIp: 0.0.0.0/0
+          Description: Outbound to the internet on configured port and protocol.
+          FromPort: !Ref FromPort
+          IpProtocol: !Ref IpProtocol
+          ToPort: !Ref ToPort
       VpcId:
         !Ref VpcId
       Tags:
@@ -72,7 +86,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-securitygroup-vpc-egress-template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/secgroup-global-egress.yaml"
   
       
 Outputs:
