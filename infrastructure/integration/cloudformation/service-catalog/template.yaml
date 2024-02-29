@@ -1,0 +1,120 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This template creates AWS Service Catalog Portfolio and Products.
+
+Resources:
+
+  ManagedCompute:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties:
+      ProviderName: "Central SRE"
+      Description: "Service Catalog compliant compute resources"
+      DisplayName: "Compute"
+  
+  lambda:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Function - v0.0.1"
+      Description: "Lambda function for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/sam-cfn-template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  ManagedEncryption:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties:
+      ProviderName: "Central SRE"
+      Description: "Service Catalog compliant encryption resources"
+      DisplayName: "Encryption"
+  
+  ManagedMessaging:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties:
+      ProviderName: "Central SRE"
+      Description: "Service Catalog compliant messaging resources"
+      DisplayName: "Messaging"
+  
+  ManageStorage:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties:
+      ProviderName: "Central SRE"
+      Description: "Service Catalog compliant storage resources"
+      DisplayName: "Storage"
+
+  
+
+  SCCProduct7:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "permissions-boundary-cri"
+      Description: "codestar"
+      Owner: "CRI"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "products/permissions-boundary2/template.yaml"
+            Branch: "permissions-boundary"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/devplatform-service-catalog-poc"
+        Type: CODESTAR
+
+  SCCProduct8:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "permissions-boundary-kiwi"
+      Description: "codestar"
+      Owner: "KIWI"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "products/permissions-boundary2/template.yaml"
+            Branch: "permissions-boundary"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/devplatform-service-catalog-poc"
+        Type: CODESTAR
+
+  SCPortfolioProductAssociation1:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    # DependsOn: ServiceCatalogCloudFormationProduct
+    Properties:
+      PortfolioId: !Ref SCPortfolioBaseAccount
+      ProductId: !Ref SCCProduct1
+
+  SCPortfolioProductAssociation2:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    # DependsOn: ServiceCatalogCloudFormationProduct
+    Properties:
+      PortfolioId: !Ref SCPortfolioBaseAccount
+      ProductId: !Ref SCCProduct2
+
+  SCPortfolioProductAssociation3:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    # DependsOn: ServiceCatalogCloudFormationProduct
+    Properties:
+      PortfolioId: !Ref SCPortfolioBaseAccount
+      ProductId: !Ref SCCProduct3
+
+  SCPortfolioProductAssociation7:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    # DependsOn: ServiceCatalogCloudFormationProduct
+    Properties:
+      PortfolioId: !Ref SCPortfoliocri
+      ProductId: !Ref SCCProduct7
+
+  # SCCustomTagOptionsAssociation:
+  #   Type: AWS::ServiceCatalog::TagOptionAssociation
+  #   Properties:
+  #     TagOptionId: !Ref ServiceCatalogProductTagOptions
+  #     ResourceId: !Ref ServiceCatalogCloudFormationProduct
+
+
+####################################
+# Outputs
+####################################
+# Outputs:

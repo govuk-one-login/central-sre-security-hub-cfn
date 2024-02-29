@@ -1,0 +1,61 @@
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template for creating github deployment role.
+
+Resources:
+
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IAM role to be assumed by GitHub for deployments.
+      RoleName: github-deployment-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: !ImportValue GitHubIdentityProviderArn
+            Condition:
+              StringLike:
+                token.actions.githubusercontent.com:sub: repo:govuk-one-login/central-sre-security-hub-cfn:*
+
+  GitHubActionsRoleIamPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: github-deployment-role-policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cloudformation:ValidateTemplate"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+              - "s3:ListBucket"
+              - "s3:DeleteObject"
+            Resource: 
+              - "arn:aws:s3:::di-central-sre-build-taskcat/*"
+              - "arn:aws:s3:::di-central-sre-build-taskcat"
+              - "arn:aws:s3:::di-central-sre-build-artifact"
+              - "arn:aws:s3:::di-central-sre-build-artifact/*"
+          - Effect: Allow
+            Action:
+              - "cloudformation:CreateStack"
+              - "cloudformation:CreateChangeSet"
+              - "cloudformation:DeleteChangeSet"
+              - "cloudformation:DeleteStack"
+              - "cloudformation:DescribeStacks"
+              - "cloudformation:DescribeStackEvents"
+              - "cloudformation:ListStacks"
+              - "cloudformation:ListStackResources"
+              - "cloudformation:UpdateStack"
+              - "cloudformation:ValidateTemplate"
+            Resource: "*"
+      Roles: 
+        - !Ref GitHubActionsRole
+      
+    
