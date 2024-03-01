@@ -26,8 +26,8 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         uses: govuk-one-login/devplatform-upload-action@v3.5
         with:
-            artifact-bucket-name: ${{ secrets.SERVICE_CATALOG_ARTIFACT_BUCKET_NAME }} # di-central-sre-build-artifact
-            signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+            artifact-bucket-name: ${{ secrets.SERVICE_CATALOG_ARTIFACT_BUCKET_NAME }} 
+            signing-profile-name: ${{ secrets.SERVICE_CATALOG_SIGNING_PROFILE_NAME }}
             working-directory: ./infrastructure/integration/cloudformation/service-catalog
             template-file: template.yaml
 
