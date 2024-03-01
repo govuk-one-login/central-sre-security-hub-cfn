@@ -8,8 +8,8 @@ module "service-catalog-pipeline" {
     Environment                = "dev"
     IncludePromotion           = "No"
     LogRetentionDays           = 30
-    SigningProfileArn          = data.aws_cloudformation_stack.aws-signer.outputs["SigningProfileArn"]
-    SigningProfileVersionArn   = data.aws_cloudformation_stack.aws-signer.outputs["SigningProfileVersionArn"]
+    SigningProfileArn          = data.aws_cloudformation_stack.aws_signer.outputs["SigningProfileArn"]
+    SigningProfileVersionArn   = data.aws_cloudformation_stack.aws_signer.outputs["SigningProfileVersionArn"]
     OneLoginRepositoryName     = "central-sre-security-hub-cfn"
   }
 
