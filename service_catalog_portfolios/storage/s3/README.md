@@ -32,7 +32,7 @@ Parameters:
         AllowedValues:
             - GOVERNANCE
             - COMPLIANCE
-        Default: COMPLIANCE
+        Default: GOVERNANCE
 ```
 ```
 ELBAccessLogsBucket:

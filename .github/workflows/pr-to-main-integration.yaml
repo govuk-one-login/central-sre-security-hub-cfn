@@ -10,6 +10,25 @@ jobs:
   lint-and-validate:
     runs-on: ubuntu-latest
     steps:
-      - name: hello
-        run: |
-          echo "It was me!!"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Has the Service Catalog Template changed
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+        with:
+          files: |
+            infrastructure/integration/cloudformation/service-catalog/template.yaml
+
+      - name: Deploy via the workflow.
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: govuk-one-login/devplatform-upload-action@v3.5
+        with:
+            artifact-bucket-name: ${{ secrets.SERVICE_CATALOG_ARTIFACT_BUCKET_NAME }} # di-central-sre-build-artifact
+            signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+            working-directory: ./infrastructure/integration/cloudformation/service-catalog
+            template-file: template.yaml
+
+
