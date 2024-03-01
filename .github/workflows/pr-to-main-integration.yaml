@@ -24,7 +24,7 @@ jobs:
       
       - name: Set up AWS credentails
         if: steps.changed-files.outputs.any_changed == 'true'
-        uses: aws-actions/configure-aws-credentials@4
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.SERVICE_CATALOG_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
