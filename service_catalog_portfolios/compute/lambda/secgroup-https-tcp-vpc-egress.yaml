@@ -43,18 +43,18 @@ Resources:
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: This acts as a virtual firewall for your EC2 instances to control incoming and outgoing traffic for Lambda Security group ruleset
+      GroupDescription: Lambda Security group ruleset.
       SecurityGroupIngress:
         - CidrIp:
             !Ref VpcCidr
-          Description: Adds ingress rule to security groups which permits instances to receive traffic from vpc cidr to port 443
+          Description: TCP HTTPS inbound from VPC.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
       SecurityGroupEgress:
         - CidrIp: 
             !Ref VpcCidr
-          Description: Adds egress rule to security groups which permits HTTPS traffic to VPC Cidr via port 443
+          Description: TCP HTTPS outbound to vpc.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443 
@@ -72,7 +72,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/lambdafunction-securitygroup-vpc-egress-template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/secgroup-https-tcp-vpc-egress.yaml"
   
       
 Outputs:

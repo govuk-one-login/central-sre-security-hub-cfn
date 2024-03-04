@@ -1,0 +1,79 @@
+name: Push To Main - Integration
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Has the Service Catalog Template changed
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+        with:
+          files: |
+            infrastructure/integration/cloudformation/service-catalog/template.yaml
+
+      - name: Have the shares changed
+        id: share-changed-files
+        uses: tj-actions/changed-files@v42
+        with:
+          files: |
+            infrastructure/integration/cloudformation/service-catalog/template.yaml
+      
+      - name: Set up AWS credentails
+        if: steps.changed-files.outputs.any_changed == 'true' || steps.share-changed-files.outputs.any_changed == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.SERVICE_CATALOG_GH_ACTIONS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Set up Python 3.11
+        if: steps.changed-files.outputs.any_changed == 'true' || steps.share-changed-files.outputs.any_changed == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up SAM cli
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: aws-actions/setup-sam@v2
+
+      - name: Deploy via the workflow.
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: govuk-one-login/devplatform-upload-action@v3.5
+        with:
+            artifact-bucket-name: ${{ secrets.SERVICE_CATALOG_ARTIFACT_BUCKET_NAME }} 
+            signing-profile-name: ${{ secrets.SERVICE_CATALOG_SIGNING_PROFILE_NAME }}
+            working-directory: ./infrastructure/integration/cloudformation/service-catalog
+            template-file: template.yaml
+      
+      - name: Get terraform version
+        if: steps.share-changed-files.outputs.any_changed == 'true'
+        id: terraform-version
+        run: |
+          cat infrastructure/integration/terraform/deployments/service-catalog-share/.terraform-version > TF_VERSION
+          echo "tf_version=$TF_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Terraform
+        if: steps.share-changed-files.outputs.any_changed == 'true'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ steps.terraform-version.outputs.tf_version }}
+
+      - name: Share Portfolios
+        if: steps.share-changed-files.outputs.any_changed == 'true'
+        run: |
+          cd infrastructure/integration/terraform/deployments/service-catalog-share
+          terraform init -input=false
+          terraform apply -input=false

@@ -44,6 +44,13 @@ Resources:
               - "arn:aws:s3:::di-central-sre-build-artifact/*"
           - Effect: Allow
             Action:
+              - "s3:GetObject"
+              - "s3:ListBucket"
+            Resource: 
+              - "arn:aws:s3:::template-storage-templatebucket-1upzyw6v9cs42/*"
+              - "arn:aws:s3:::template-storage-templatebucket-1upzyw6v9cs42"
+          - Effect: Allow
+            Action:
               - "cloudformation:CreateStack"
               - "cloudformation:CreateChangeSet"
               - "cloudformation:DeleteChangeSet"
@@ -139,7 +146,7 @@ Resources:
           - Effect: Allow
             Action:
               - "lambda:*"
-            Resource: "arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX"
+            Resource: "arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-*"
       Roles: 
         - !Ref GitHubActionsRole
       
