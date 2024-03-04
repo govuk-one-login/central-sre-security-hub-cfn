@@ -61,4 +61,39 @@ jobs:
       - name: Run TaskCat
         run: |
           ./infrastructure/build/scripts/run_taskcat.sh
+      
+      - name: Get terraform version
+        id: terraform-version
+        run: |
+          cat infrastructure/integration/terraform/deployments/service-catalog-share/.terraform-version > TF_VERSION
+          echo "tf_version=$TF_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ steps.terraform-version.outputs.tf_version }}
+  
+      - name: Share Portfolios terraform valid
+        run: |
+          cd infrastructure/integration/terraform/deployments/service-catalog-share
+          terraform init -input=false -backend=false
+          terraform validate
+
+      - name: Service Catalog terraform valid
+        run: |
+          cd infrastructure/integration/terraform/deployments/service-catalog
+          terraform init -input=false -backend=false
+          terraform validate
+
+      - name: Service Catalog pipeline dependencies terraform valid
+        run: |
+          cd infrastructure/integration/terraform/deployments/pipeline-dependencies
+          terraform init -input=false -backend=false
+          terraform validate
+
+      - name: Test pipelines terraform valid
+        run: |
+          cd infrastructure/build/terraform/deployments/service-catalog-product-tests/pipeline-dependencies
+          terraform init -input=false -backend=false
+          terraform validate
 
