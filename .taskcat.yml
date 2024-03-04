@@ -20,7 +20,7 @@ tests:
     parameters:
       LambdaRole: iam-for-empty-lambda
       SubnetIds: subnet-0a1c19ce3ee6b2d50,subnet-0e2e55747c817abac
-      SecurityGroupIds: "sg-05fa01fdf5d0dd615"
+      SecurityGroupIds: "sg-0e8a9cae820ad99c4"
       SSMParameterArn: arn:aws:ssm:eu-west-2:891376909120:parameter/empty-lambda-config
       LambdaCodeUriBucket: di-central-sre-build-artifact
       LambdaCodeUriKey: python/empty-lambda.zip
@@ -118,7 +118,7 @@ tests:
     parameters:
       SecretName: taskcat-<hash-place-holder>-secret
       SecretDescription: "A secret tested by taskcat"
-      KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX
+      KeyRotationLambdaARN: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-6621ksAV4GDP
       KmsKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
       NotifyAfterUnusedForDays: 90
       DeletionPolicy: Delete
