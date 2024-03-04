@@ -1,0 +1,35 @@
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template Granting additional permissions to the service catalog github deployment role
+
+Resources:
+
+  GitHubActionsRoleIamPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: github-deployment-role-policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+              - "s3:ListBucket"
+              - "s3:DeleteObject"
+            Resource: 
+              - "arn:aws:s3:::devplatform-service-catalog-tfstate/*"
+              - "arn:aws:s3:::devplatform-service-catalog-tfstate"
+          - Effect: Allow
+            Action:
+              - "servicecatalog:CreatePortfolioShare"
+              - "servicecatalog:DescribePortfolioShares"
+              - "servicecatalog:DescribePortfolioShareStatus"
+              - "servicecatalog:RejectPortfolioShare"
+              - "servicecatalog:UpdatePortfolioShare"
+            Resource:
+              - "*"
+      Roles: 
+        - service-catalog-pipeline-GitHubActionsRole-zxftPyhLYivU
+      
+    
