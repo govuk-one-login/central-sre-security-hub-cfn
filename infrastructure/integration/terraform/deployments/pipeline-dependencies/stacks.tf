@@ -23,3 +23,16 @@ module "aws-signer" {
     System = "Central SRE"
   }
 }
+
+module "slack-notifications" {
+  source     = "git@github.com:alphagov/di-ipv-terraform-modules.git//secure-pipeline/slack-notifications"
+  stack_name = "di-devplatform-service-catalog-notifications"
+  parameters = {
+    SlackChannelId   = "C05TK3HH3RC" #skunkworks
+    SlackWorkspaceId = "T8GT9416G"
+  }
+
+  tags_custom = {
+    System = "Central SRE"
+  }
+}

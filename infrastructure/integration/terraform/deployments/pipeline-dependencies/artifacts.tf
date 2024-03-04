@@ -54,7 +54,7 @@ resource "aws_s3_bucket_policy" "artifacts" {
 
 resource "aws_cloudformation_stack" "artifacts_kms_key" {
   name          = "artifacts-kms-key"
-  template_body = file("${path.module}/../../../../../../service_catalog_portfolios/encryption/kms/template.yaml")
+  template_body = file("${path.module}/../../../../../service_catalog_portfolios/encryption/kms/template.yaml")
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts" {
