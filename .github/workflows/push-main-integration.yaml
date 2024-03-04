@@ -1,4 +1,4 @@
-name: PR To Main - Integration
+name: Push To Main - Integration
 
 on:
   push:
