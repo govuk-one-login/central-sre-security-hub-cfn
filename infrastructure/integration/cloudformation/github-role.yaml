@@ -2,6 +2,12 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: CloudFormation template Granting additional permissions to the service catalog github deployment role
 
+
+Parameters:
+  DepolymentRole:
+    Description: Github Deployment role.
+    Type: String
+
 Resources:
 
   GitHubActionsRoleIamPolicy:
@@ -30,6 +36,6 @@ Resources:
             Resource:
               - "*"
       Roles: 
-        - service-catalog-pipeline-GitHubActionsRole-zxftPyhLYivU
+        - !Ref DepolymentRole
       
     
