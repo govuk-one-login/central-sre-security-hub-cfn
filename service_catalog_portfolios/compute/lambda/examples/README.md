@@ -27,7 +27,7 @@ Here you'll find a demo Lambda function for use with Service Catalog Lambda temp
         - When you reference a Secrets Manager secret, the name must begin with the following reserved path: `/aws/reference/secretsmanager/`
         - By specifying this path, Systems Manager knows to retrieve the secret from Secrets Manager instead of Parameter Store. Below is an example:
       ```bash
-      /aws/reference/secretsmanager/CFCreds1
+      /aws/reference/secretsmanager/MyTestSecret
       ```
     - get_parameter syntax:
 ```bash
