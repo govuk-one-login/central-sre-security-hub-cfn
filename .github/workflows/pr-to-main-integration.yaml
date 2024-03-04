@@ -1,7 +1,7 @@
 name: PR To Main - Integration
 
 on:
-  pull_request:
+  push:
     branches:
       - main
   workflow_dispatch:
@@ -13,14 +13,6 @@ jobs:
   lint-and-validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "$JOB_CONTEXT"
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
