@@ -25,7 +25,7 @@ jobs:
           files: |
             infrastructure/integration/cloudformation/service-catalog/template.yaml
 
-      - name: Has the chare changed changed
+      - name: Have the shares changed
         id: share-changed-files
         uses: tj-actions/changed-files@v42
         with:
