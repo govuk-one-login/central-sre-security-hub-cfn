@@ -52,7 +52,7 @@ jobs:
           hash=$(tr -dc 'a-z0-9' </dev/urandom | head -c 13; echo)
           echo $hash
           sed -i "s/<hash-place-holder>/$hash/g" .taskcat.yml
-          sed -i "s/<hash-place-holder>/$hash/g" build/scripts/run_taskcat.sh
+          sed -i "s/<hash-place-holder>/$hash/g" infrastructure/build/scripts/run_taskcat.sh
 
       - name: Install TaskCat
         run: |
@@ -60,5 +60,5 @@ jobs:
 
       - name: Run TaskCat
         run: |
-          ./build/scripts/run_taskcat.sh
+          ./infrastructure/build/scripts/run_taskcat.sh
 
