@@ -79,7 +79,7 @@ tests:
   test-sns-subscription:
     parameters:
       TopicArn: arn:aws:sns:eu-west-2:891376909120:taskcat-topic
-      SubscriberArn: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-NX8tjZ3sq0PX
+      SubscriberArn: arn:aws:lambda:eu-west-2:891376909120:function:sc-product-test-empty-lambda-LambdaFunction-6621ksAV4GDP
       System: taskcat-<hash-place-holder>
     template: ./service_catalog_portfolios/messaging/sns-subscription/template.yaml
 
