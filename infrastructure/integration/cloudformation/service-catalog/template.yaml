@@ -21,7 +21,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/compute/lambda/sam-cfn-template.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -42,7 +42,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-global-egress.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -63,7 +63,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-dynamodb-s3-global-egress.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -84,7 +84,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-global-egress.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -105,7 +105,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-vpc-egress.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -133,7 +133,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/encryption/kms/template.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -161,7 +161,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/messaging/sns/template.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -182,7 +182,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/messaging/sns-subscription/template.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -210,7 +210,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/storage/dynamo/template.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -231,7 +231,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -252,7 +252,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
@@ -273,7 +273,7 @@ Resources:
         ConnectionParameters:
           CodeStar:
             ArtifactPath: "service_catalog_portfolios/storage/secrets-manager/template.yaml"
-            Branch: "main"
+            Branch: "f/SW-200"
             ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
