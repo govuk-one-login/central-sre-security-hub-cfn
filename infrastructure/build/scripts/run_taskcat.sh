@@ -1,6 +1,6 @@
 #!/bin/bash
 region=eu-west-2
-delay=30
+delay=45
 taskcat test run --no-delete &> taskcat-output
 cat taskcat-output
 if grep -Fq "ERROR" taskcat-output
