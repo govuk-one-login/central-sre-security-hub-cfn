@@ -62,7 +62,7 @@ Resources:
       SecurityGroupIngress:
         - CidrIp:
             !Ref VpcCidr
-          Description: TCP HTTPS inbound to VPC.
+          Description: TCP HTTPS inbound from VPC.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
