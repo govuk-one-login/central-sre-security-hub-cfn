@@ -117,10 +117,6 @@ Parameters:
     Default: Central-SRE
     Description: "Tag all your resources with the team name."
 
-  KmsKeyId:
-    Type: String
-    Description: "Id of the KMS key to use to encrypt the dead letter queue."
-
   KmsKeyArn:
     Type: String
     Description: "Arn of the KMS key to use to encrypt the dead letter queue."
@@ -188,7 +184,7 @@ Resources:
     Properties:
       LogGroupName: !Sub "${AWS::StackName}-LogGroup"
       RetentionInDays: !Ref LambdaLogGroupRetention
-      KmsKeyId: !Ref KmsKeyId
+      KmsKeyId: !Ref KmsKeyArn
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"
