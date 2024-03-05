@@ -117,6 +117,14 @@ Parameters:
     Default: Central-SRE
     Description: "Tag all your resources with the team name."
 
+  KmsKeyId:
+    Type: String
+    Description: "Id of the KMS key to use to encrypt the dead letter queue."
+
+    KmsKeyArn:
+      Type: String
+      Description: "Arn of the KMS key to use to encrypt the dead letter queue."
+
 Conditions:
   CentralisedLoggingLambdaFunction:
     !Or [
@@ -155,6 +163,7 @@ Resources:
       MemorySize: !Ref MemorySize
       Timeout: !Ref Timeout
       Handler: !Ref LambdaHandler
+      KmsKeyArn: !Ref KmsKeyArn
       Environment:
         Variables:
           ParameterArn: 
@@ -179,6 +188,7 @@ Resources:
     Properties:
       LogGroupName: !Sub "${AWS::StackName}-LogGroup"
       RetentionInDays: !Ref LambdaLogGroupRetention
+      KmsKeyId: !Ref KmsKeyId
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"
@@ -205,6 +215,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties: 
       QueueName: !Sub "${AWS::StackName}"
+      KmsMasterKeyId: !Ref KmsKeyId
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"
@@ -218,7 +229,6 @@ Resources:
           Value: !Ref Owner
         - Key: Source
           Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/sam-cfn-template.yaml"
-
 
   DenyPublicAccessPolicy:
     Type: AWS::IAM::RolePolicy
@@ -260,7 +270,6 @@ Resources:
             Resource: "*"
       PolicyName: !Sub "LambdaExecutionPolicy-${AWS::StackName}"
       RoleName: !Ref LambdaRole
-
 
 Outputs:
   DeadLetterQueueARN: 
