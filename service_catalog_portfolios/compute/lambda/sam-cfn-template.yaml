@@ -121,9 +121,9 @@ Parameters:
     Type: String
     Description: "Id of the KMS key to use to encrypt the dead letter queue."
 
-    KmsKeyArn:
-      Type: String
-      Description: "Arn of the KMS key to use to encrypt the dead letter queue."
+  KmsKeyArn:
+    Type: String
+    Description: "Arn of the KMS key to use to encrypt the dead letter queue."
 
 Conditions:
   CentralisedLoggingLambdaFunction:
