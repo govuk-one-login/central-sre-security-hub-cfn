@@ -313,7 +313,7 @@ Resources:
                   - "cloudwatch:DescribeAlarms"
                   - "cloudwatch:GetMetricStatistics"
                   - "cloudwatch:SetAlarmState"
-                  - "cloudwatch:DeleteAlaterms"
+                  - "cloudwatch:DeleteAlarms"
                 Resource: "*"
                 Condition:
                   StringEquals:
