@@ -55,9 +55,10 @@ do
             echo "Checking resource $resource"
             aws securityhub get-findings \
             --region $region \
-            --filters "{\"ResourceId\":[{\"Value\": \"$resource\", \"Comparison\":\"EQUALS\"}] }" \
+            --filters "{\"ResourceId\":[{\"Value\": \"$resource\", \"Comparison\":\"EQUALS\"}], \
+               \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
             --query "Findings[*].{Title:Title, Description:Description, Status:Compliance.Status, Severity:Severity.Label}" \
-            --output json > "./$stackdir/$resource.json"
+            --output json > "./$stackdir/$resource.json" 
             echo "Report written to:"
             echo "./$stackdir/$resource.json"
 

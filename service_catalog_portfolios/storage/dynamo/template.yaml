@@ -313,8 +313,12 @@ Resources:
                   - "cloudwatch:DescribeAlarms"
                   - "cloudwatch:GetMetricStatistics"
                   - "cloudwatch:SetAlarmState"
-                  - "cloudwatch:DeleAlaterms"
+                  - "cloudwatch:DeleteAlarms"
                 Resource: "*"
+                Condition:
+                  StringEquals:
+                    aws:PrincipalAccount:
+                      - !Ref "AWS::AccountId"
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"

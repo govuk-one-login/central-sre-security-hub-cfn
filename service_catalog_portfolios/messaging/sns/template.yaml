@@ -137,6 +137,10 @@ Resources:
               - logs:PutRetentionPolicy
               Resource:
               - "*"
+              Condition:
+                StringEquals:
+                  aws:PrincipalAccount:
+                    - !Ref "AWS::AccountId"
       Tags:
         - Key: StackName
           Value: !Sub "${AWS::StackName}"
