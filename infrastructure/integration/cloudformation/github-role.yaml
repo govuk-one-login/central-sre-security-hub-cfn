@@ -4,7 +4,7 @@ Description: CloudFormation template Granting additional permissions to the serv
 
 
 Parameters:
-  DepolymentRole:
+  DeploymentRole:
     Description: Github Deployment role.
     Type: String
 
@@ -36,6 +36,6 @@ Resources:
             Resource:
               - "*"
       Roles: 
-        - !Ref DepolymentRole
+        - !Ref DeploymentRole
       
     
