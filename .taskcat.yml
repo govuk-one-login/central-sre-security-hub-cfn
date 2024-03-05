@@ -28,7 +28,6 @@ tests:
       LambdaHandler: handler.process
       System: taskcat-<hash-place-holder>
       LambdaRoleNamePrefix: ""
-      KmsKeyArn: arn:aws:kms:eu-west-2:891376909120:key/31dc9883-64a5-43f9-86b4-ef0f929e3343
     template: ./service_catalog_portfolios/compute/lambda/sam-cfn-template.yaml
   
   test-lambda-secgroup-gateway-endpoint-prefix:
