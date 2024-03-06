@@ -60,7 +60,7 @@ jobs:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           for file in ${ALL_CHANGED_FILES}; do
-            COMMAND=$(echo "$file" | awk -F/ '{print "cat "$1 "/" $2 "/" $3 "/taskcat.txt >> .taskcat_alt.yml"}')
+            COMMAND=$(echo "$file" | awk -F/ '{print "cat "$1 "/" $2 "/" $3 "/taskcat.txt >> .taskcat.yml"}')
             echo $COMMAND >> taskcat_command_builder.txt
           done
           sort taskcat_command_builder.txt | uniq > taskcat_command_builder.sh
