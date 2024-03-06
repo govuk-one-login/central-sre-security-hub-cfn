@@ -32,7 +32,9 @@ jobs:
         run: |
           for file in ${ALL_CHANGED_FILES}; do
             COMMAND=$(echo "$file" | awk -F/ '{print "cat "$1 "/" $2 "/" $3 "/taskcat.txt >> .taskcat_alt.yml"}')
-            eval ${COMMAND}
+            echo $COMMAND >> taskcat_command_builder.txt
           done
-          
+          sort taskcat_command_builder.txt | uniq > taskcat_command_builder.sh
+          chmod +x taskcat_command_builder.sh
+          ./taskcat_command_builder.sh
           cat .taskcat_alt.yml
