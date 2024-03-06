@@ -267,4 +267,3 @@ Outputs:
   S3BucketNameOutput:
     Value: !Ref S3Bucket
     Description: The name of the Logging s3 bucket.
-    
