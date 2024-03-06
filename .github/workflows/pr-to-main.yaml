@@ -1,7 +1,7 @@
 name: PR To Main
 # When a PR is opened, synchronize, or reopened this workflow will run.
 # Make sure the service catalog templates are checkov and security hub complaint.
-# Taskcat validates and   
+# Taskcat validates and runs for portfolios that have had a change  
 
 on:
   pull_request:
@@ -18,7 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -45,8 +46,29 @@ jobs:
           directory: service_catalog_portfolios/
           quiet: true 
           framework: cloudformation
+
+      - name: Has the Service Catalog Template changed
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+        with:
+          files: |
+            service_catalog_portfolios/**
+        
+      - name: Populate the tascat file
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          for file in ${ALL_CHANGED_FILES}; do
+            COMMAND=$(echo "$file" | awk -F/ '{print "cat "$1 "/" $2 "/" $3 "/taskcat.txt >> .taskcat.yml"}')
+            echo $COMMAND >> taskcat_command_builder.txt
+          done
+          sort taskcat_command_builder.txt | uniq > taskcat_command_builder.sh
+          chmod +x taskcat_command_builder.sh
+          ./taskcat_command_builder.sh
       
       - name: Generate and apply hash
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           hash=$(tr -dc 'a-z0-9' </dev/urandom | head -c 13; echo)
           echo $hash
@@ -54,10 +76,12 @@ jobs:
           sed -i "s/<hash-place-holder>/$hash/g" infrastructure/build/scripts/run_taskcat.sh
 
       - name: Install TaskCat
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           pip install taskcat
 
       - name: Run TaskCat
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           ./infrastructure/build/scripts/run_taskcat.sh
 

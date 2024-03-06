@@ -1,0 +1,6 @@
+  test-kms:
+    parameters:
+      System: taskcat-<hash-place-holder>
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+    template: ./service_catalog_portfolios/encryption/kms/template.yaml
