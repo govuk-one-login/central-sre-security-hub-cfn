@@ -1,0 +1,15 @@
+general:
+  s3_bucket: "di-central-sre-build-taskcat"
+  regions:
+   - eu-west-2
+  artifact_regions:
+    - eu-west-2
+  tags:
+      TestingFramework: taskcat-<hash-place-holder>
+
+project:
+  owner: di-central-sre-build
+  name: sec-hub-templates
+  package_lambda: false
+  
+tests:

@@ -31,5 +31,8 @@ jobs:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           for file in ${ALL_CHANGED_FILES}; do
-            echo "$file was changed"
+            COMMAND=$(echo "$file" | awk -F/ '{print "cat "$1 "/" $2 "/" $3 "/taskcat.txt >> .taskcat_alt.yml"}')
+            eval ${COMMAND}
           done
+          
+          cat .taskcat_alt.yml
