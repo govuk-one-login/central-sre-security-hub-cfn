@@ -10,7 +10,7 @@ permissions:
   id-token: write
   contents: read
 jobs:
-  lint-and-validate:
+  experiment:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -23,7 +23,7 @@ jobs:
         uses: tj-actions/changed-files@v42
         with:
           files: |
-            service_catalog_portfolios
+            service_catalog_portfolios/**
          
       - name: Identify the files that have changed
         if: steps.changed-files.outputs.any_changed == 'true'
