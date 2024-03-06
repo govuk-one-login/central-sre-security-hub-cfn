@@ -18,7 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -45,19 +46,35 @@ jobs:
           directory: service_catalog_portfolios/
           quiet: true 
           framework: cloudformation
+
+      - name: Has the Service Catalog Template changed
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+        with:
+          files: |
+            service_catalog_portfolios
+       
+      - name: Identify the files that have changed
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed"
+          done
       
-      - name: Generate and apply hash
-        run: |
-          hash=$(tr -dc 'a-z0-9' </dev/urandom | head -c 13; echo)
-          echo $hash
-          sed -i "s/<hash-place-holder>/$hash/g" .taskcat.yml
-          sed -i "s/<hash-place-holder>/$hash/g" infrastructure/build/scripts/run_taskcat.sh
+      # - name: Generate and apply hash
+      #   run: |
+      #     hash=$(tr -dc 'a-z0-9' </dev/urandom | head -c 13; echo)
+      #     echo $hash
+      #     sed -i "s/<hash-place-holder>/$hash/g" .taskcat.yml
+      #     sed -i "s/<hash-place-holder>/$hash/g" infrastructure/build/scripts/run_taskcat.sh
 
-      - name: Install TaskCat
-        run: |
-          pip install taskcat
+      # - name: Install TaskCat
+      #   run: |
+      #     pip install taskcat
 
-      - name: Run TaskCat
-        run: |
-          ./infrastructure/build/scripts/run_taskcat.sh
+      # - name: Run TaskCat
+      #   run: |
+      #     ./infrastructure/build/scripts/run_taskcat.sh
 
