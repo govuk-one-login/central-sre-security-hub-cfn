@@ -1,5 +1,7 @@
 # DynamoDB CloudFormation Template
 
+This DynamoDB CloudFormation template creates a Security Hub conformant DynamoDB table. 
+
 Template conforms to AWS Security best practices:
   - Amazon DynamoDB tables or global secondary indexes can process read/write capacity using on-demand mode or provisioned mode with auto scaling enabled.
   - Amazon DynamoDB table is present in AWS Backup Plans
