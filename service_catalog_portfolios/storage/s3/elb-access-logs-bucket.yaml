@@ -108,7 +108,7 @@ Resources:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
       Tags:
         - Key: StackName
-          Value: !Sub "${AWS::StackName}-elbaccesslogs"
+          Value: !Sub "${AWS::StackName}"
         - Key: Product
           Value: !Ref Product
         - Key: System
@@ -169,7 +169,7 @@ Resources:
             - "/"
       Tags:
         - Key: StackName
-          Value: !Sub "${AWS::StackName}-elbaccesslogs"
+          Value: !Sub "${AWS::StackName}"
         - Key: Product
           Value: !Ref Product
         - Key: System
