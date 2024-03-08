@@ -30,7 +30,7 @@ jobs:
         uses: tj-actions/changed-files@v42
         with:
           files: |
-            infrastructure/integration/cloudformation/service-catalog/template.yaml
+            infrastructure/integration/terraform/service-catalog-share/**.tf
       
       - name: Set up AWS credentails
         if: steps.changed-files.outputs.any_changed == 'true' || steps.share-changed-files.outputs.any_changed == 'true'
