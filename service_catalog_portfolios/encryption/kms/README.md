@@ -1,6 +1,6 @@
 # KMS Key CloudFormation Template
 
-This KMS Key Cloudformation template specifies a KMS key in AWS Key Management Service. You can use this resource to create symmetric encryption KMS keys, asymmetric KMS keys for encryption or signing, and symmetric HMAC KMS keys.
+This KMS Key Cloudformation template creates a KMS key in AWS Key Management Service. You can use this resource to create symmetric encryption KMS keys, asymmetric KMS keys for encryption or signing, and symmetric HMAC KMS keys.
 
 Template conforms to AWS Security best practices:
   - Automatic key rotation is enabled for each key and matches to the key ID of the customer created AWS KMS key. 
@@ -26,9 +26,8 @@ Automated key rotation currently retains all previous backing keys so that decry
 
 ### Key Spec and Usage
 
-- This template uses various AWS services that can use the CMK (Custom Master Key)
 - Key Spec > specifies the type of KMS key to create
-- Key usage determines the cryptographic operations for which you can use the KMS key
+- Key usage determines the cryptographic operations for which you can use the KMS key > there are only two allowed values: ENCRYPT_DECRYPT or SIGN_VERIFY
 
 ## Notes
 
