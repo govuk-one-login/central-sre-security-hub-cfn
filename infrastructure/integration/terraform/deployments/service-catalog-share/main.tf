@@ -5,7 +5,7 @@ resource "aws_servicecatalog_portfolio_share" "compute" {
   for_each = toset(local.account_shares)
 
   principal_id = each.value
-  portfolio_id = "port-hh44eiilsucds"
+  portfolio_id = "port-se3ntmvk63ir6"
   type         = "ACCOUNT"
 }
 
@@ -13,7 +13,7 @@ resource "aws_servicecatalog_portfolio_share" "encryption" {
   for_each = toset(local.account_shares)
 
   principal_id = each.value
-  portfolio_id = "port-cpfdvkdctommo"
+  portfolio_id = "port-7ywkeavcrur6u"
   type         = "ACCOUNT"
 }
 
@@ -21,7 +21,7 @@ resource "aws_servicecatalog_portfolio_share" "messaging" {
   for_each = toset(local.account_shares)
 
   principal_id = each.value
-  portfolio_id = "port-i66rmt4bkpj4i"
+  portfolio_id = "port-p3jhpq3k4c65w"
   type         = "ACCOUNT"
 }
 
@@ -29,6 +29,6 @@ resource "aws_servicecatalog_portfolio_share" "storage" {
   for_each = toset(local.account_shares)
   
   principal_id = each.value
-  portfolio_id = "port-xu3knezauqlwk"
+  portfolio_id = "port-g5sj6kxctmpza"
   type         = "ACCOUNT"
 }
