@@ -357,9 +357,9 @@ Resources:
             Repository: "govuk-one-login/central-sre-security-hub-cfn"
         Type: CODESTAR
 
-  SecretsManagerSecretAssociation:
-    Type: AWS::ServiceCatalog::PortfolioProductAssociation
-    Properties:
-      PortfolioId: !Ref ManageStorage
-      ProductId: !Ref SecretsManagerSecret
+  # SecretsManagerSecretAssociation:
+  #   Type: AWS::ServiceCatalog::PortfolioProductAssociation
+  #   Properties:
+  #     PortfolioId: !Ref ManageStorage
+  #     ProductId: !Ref SecretsManagerSecret
   
