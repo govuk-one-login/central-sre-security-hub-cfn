@@ -52,4 +52,5 @@ resource "aws_servicecatalog_portfolio_share" "storage" {
   timeouts {
     read = "3m"
   }
+  
 }

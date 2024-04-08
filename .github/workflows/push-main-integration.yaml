@@ -77,4 +77,4 @@ jobs:
         run: |
           cd infrastructure/integration/terraform/deployments/service-catalog-share
           terraform init -input=false
-          terraform apply -input=false
+          terraform apply -input=false -auto-approve
