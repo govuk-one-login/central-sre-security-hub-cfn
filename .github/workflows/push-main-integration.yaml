@@ -70,7 +70,6 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ steps.terraform-version.outputs.tf_version }}
-          terraform_wrapper: false
 
       - name: Share Portfolios
         if: steps.changed-files.outputs.any_changed == 'true' || steps.share-changed-files.outputs.any_changed == 'true'
