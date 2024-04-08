@@ -78,7 +78,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/infrastructure/integration/cloudformation/service-catalog/template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/notifications/template.yaml"
 
   KeyAlias:
     Type: "AWS::KMS::Alias"
@@ -104,7 +104,7 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
         - Key: Source
-          Value: "govuk-one-login/infrastructure/integration/cloudformation/service-catalog/template.yaml"
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/notifications/template.yaml"
 
   SNSAccessPolicy:
     Type: AWS::SNS::TopicPolicy
