@@ -50,6 +50,6 @@ resource "aws_servicecatalog_portfolio_share" "storage" {
   wait_for_acceptance = false
 
   timeouts {
-    read = "3m" 
+    read = "3m"
   }
 }
