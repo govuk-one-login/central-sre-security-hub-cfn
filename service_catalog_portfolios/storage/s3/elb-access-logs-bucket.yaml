@@ -20,7 +20,7 @@ Parameters:
     AllowedValues:
          - GOVERNANCE
          - COMPLIANCE
-    Default: COMPLIANCE
+    Default: GOVERNANCE
 
   LogRetentionInDays: 
     Description: Specifies the number of days that logs events should be retained in the specified log group.
@@ -108,7 +108,7 @@ Resources:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
       Tags:
         - Key: StackName
-          Value: !Sub "${AWS::StackName}-elbaccesslogs"
+          Value: !Sub "${AWS::StackName}"
         - Key: Product
           Value: !Ref Product
         - Key: System
@@ -169,7 +169,7 @@ Resources:
             - "/"
       Tags:
         - Key: StackName
-          Value: !Sub "${AWS::StackName}-elbaccesslogs"
+          Value: !Sub "${AWS::StackName}"
         - Key: Product
           Value: !Ref Product
         - Key: System

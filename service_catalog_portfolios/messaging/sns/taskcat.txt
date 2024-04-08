@@ -1,0 +1,6 @@
+  test-sns:
+    parameters:
+      TopicName: taskcat-<hash-place-holder>
+      KMSKeyId: 31dc9883-64a5-43f9-86b4-ef0f929e3343
+      System: taskcat-<hash-place-holder>
+    template: ./service_catalog_portfolios/messaging/sns/template.yaml

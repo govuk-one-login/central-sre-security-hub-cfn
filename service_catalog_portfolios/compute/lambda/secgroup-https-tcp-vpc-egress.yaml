@@ -1,0 +1,82 @@
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  This Security Group template is for Security Group Ingress rules and Security Group Egress VPC rules,
+  allowing inbound traffic from vpc cidr to port 443 and allowing outbound HTTPS traffic to vpc cidr from port 443.
+  Managed by: central-sre.
+
+Parameters:
+  VpcId:
+    Type: String
+    Description: Vpc Id for Security Group. 
+
+  VpcCidr:
+    Type: String
+    Description: List of Vpc Cidr for Security Group 
+  
+  Environment:
+    Type: String
+    Description: Name of environment you are deploying into and the value for the tag environment to be added to all resources.
+    Default: dev
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Central-SRE-test-service
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+Resources:
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Lambda Security group ruleset.
+      SecurityGroupIngress:
+        - CidrIp:
+            !Ref VpcCidr
+          Description: TCP HTTPS inbound from VPC.
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      SecurityGroupEgress:
+        - CidrIp: 
+            !Ref VpcCidr
+          Description: TCP HTTPS outbound to vpc.
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443 
+      VpcId:
+        !Ref VpcId
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/service_catalog_profiles/compute/lamba/secgroup-https-tcp-vpc-egress.yaml"
+  
+      
+Outputs:
+  SecurityGroup: 
+    Description: The Lambda functions Security Group ID
+    Value: 
+      !GetAtt LambdaSecurityGroup.GroupId

@@ -1,0 +1,365 @@
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template creates AWS Service Catalog Portfolio and Products.
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Name of environment you are deploying into and the value for the tag environment to be added to all resources.
+    Default: dev
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Service-Catalog
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+Resources:
+
+  ManagedCompute:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties:
+      ProviderName: "Central SRE"
+      Description: "Service Catalog compliant compute resources"
+      DisplayName: "Compute"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/service-catalog/template.yaml"
+  
+  Lambda:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Function - v0.0.1"
+      Description: "Lambda function for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/sam-cfn-template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref Lambda
+
+  LambdaSecGroupConfigurableGlobalEgress:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Security Group configurable egress port and protocol - v0.0.1"
+      Description: "Lambda Security Group configurable egress port and protocol to be used in conjuction with the 'Lambda Function' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-global-egress.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaSecGroupConfigurableGlobalEgressAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref LambdaSecGroupConfigurableGlobalEgress
+
+  LambdaSecGroupGatewayEndpoints:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Security Group Gateway endpoints egress - v0.0.1"
+      Description: "Lambda Security Group Gateway endpoints egress to be used in conjuction with the 'Lambda Function' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-dynamodb-s3-global-egress.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaSecGroupGatewayEndpointsAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref LambdaSecGroupGatewayEndpoints
+
+  LambdaSecGroupGlobalEgress:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Security Group tcp https egress to the internet - v0.0.1"
+      Description: "Lambda Security Group tcp https regress to the internet to be used in conjuction with the 'Lambda Function' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-global-egress.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaSecGroupGlobalEgressAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref LambdaSecGroupGlobalEgress
+
+  LambdaSecGroupVpcEgress:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Lambda Security Group tcp https egress to the vpc - v0.0.1"
+      Description: "Lambda Security Group tcp https egress to the vpc to be used in conjuction with the 'Lambda Function' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/compute/lambda/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/compute/lambda/secgroup-https-tcp-vpc-egress.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  LambdaSecGroupVpcEgressAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedCompute
+      ProductId: !Ref LambdaSecGroupVpcEgress
+
+  ManagedEncryption:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties:
+      ProviderName: "Central SRE"
+      Description: "Service Catalog compliant encryption resources"
+      DisplayName: "Encryption"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/service-catalog/template.yaml"
+
+  Kms:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "KMS key - v0.0.1"
+      Description: "KMS key product"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/encryption/kms/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  KmsAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedEncryption
+      ProductId: !Ref Kms
+  
+  ManagedMessaging:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties:
+      ProviderName: "Central SRE"
+      Description: "Service Catalog compliant messaging resources"
+      DisplayName: "Messaging"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/service-catalog/template.yaml"
+
+  Sns:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "SNS Topic - v0.0.1"
+      Description: "SNS Topic product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/messaging/sns/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/messaging/sns/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  SnsAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedMessaging
+      ProductId: !Ref Sns
+
+  SnsSubscription:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "SNS Topic - v0.0.1"
+      Description: "SNS Topic Subscription product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/messaging/sns-subscription/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/messaging/sns-subscription/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  SnsSubscriptionAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManagedMessaging
+      ProductId: !Ref SnsSubscription
+  
+  ManageStorage:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties:
+      ProviderName: "Central SRE"
+      Description: "Service Catalog compliant storage resources"
+      DisplayName: "Storage"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/service-catalog/template.yaml"
+
+  Dynamodb:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "DynamoDB - v0.0.1"
+      Description: "DynamoDB product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/storage/dynamo/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/storage/dynamo/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  DynamodbAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManageStorage
+      ProductId: !Ref Dynamodb
+
+  S3ElbAccessLogsBucket:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "S3 ELB Access Logs Bucket - v0.0.1"
+      Description: "S3 ELB Access logs bucket for the logging bucket look at deploying 'S3 Logging Bucket' product for more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/storage/s3/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/storage/s3/elb-access-logs-bucket.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  S3ElbAccessLogsBucketAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManageStorage
+      ProductId: !Ref S3ElbAccessLogsBucket
+
+  S3LoggingBucket:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "S3 Loggging Bucket - v0.0.1"
+      Description: "S3 Loggging Bucket product, deploy once per account. For more details on usage see https://github.com/govuk-one-login/central-sre-security-hub-cfn/blob/main/service_catalog_portfolios/storage/s3/README.md"
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/storage/s3/s3-logging-bucket.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  S3LoggingBucketAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManageStorage
+      ProductId: !Ref S3LoggingBucket
+
+  SecretsManagerSecret:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: "Secrets Manager Secret - v0.0.1"
+      Description: "Secrets Manager Secret product."
+      Owner: "Central SRE"
+      SourceConnection:
+        ConnectionParameters:
+          CodeStar:
+            ArtifactPath: "service_catalog_portfolios/storage/secrets-manager/template.yaml"
+            Branch: "main"
+            ConnectionArn: "arn:aws:codestar-connections:eu-west-2:637423182621:connection/bd58700d-8b6b-42eb-b88f-852e31c9273b"
+            Repository: "govuk-one-login/central-sre-security-hub-cfn"
+        Type: CODESTAR
+
+  SecretsManagerSecretAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref ManageStorage
+      ProductId: !Ref SecretsManagerSecret
+  

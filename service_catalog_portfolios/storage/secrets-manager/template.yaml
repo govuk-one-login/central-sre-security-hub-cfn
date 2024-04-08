@@ -114,5 +114,3 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: secretsmanager.amazonaws.com
       SourceAccount: !Ref "AWS::AccountId"
-
-
