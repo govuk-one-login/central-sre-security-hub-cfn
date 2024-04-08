@@ -1,6 +1,33 @@
 
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: This template creates AWS Service Catalog Portfolio and Products.
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Name of environment you are deploying into and the value for the tag environment to be added to all resources.
+    Default: dev
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Service-Catalog
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
 
 Resources:
 
@@ -10,6 +37,19 @@ Resources:
       ProviderName: "Central SRE"
       Description: "Service Catalog compliant compute resources"
       DisplayName: "Compute"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/service-catalog/template.yaml"
   
   Lambda:
     Type: AWS::ServiceCatalog::CloudFormationProduct
@@ -122,6 +162,19 @@ Resources:
       ProviderName: "Central SRE"
       Description: "Service Catalog compliant encryption resources"
       DisplayName: "Encryption"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/service-catalog/template.yaml"
 
   Kms:
     Type: AWS::ServiceCatalog::CloudFormationProduct
@@ -150,6 +203,19 @@ Resources:
       ProviderName: "Central SRE"
       Description: "Service Catalog compliant messaging resources"
       DisplayName: "Messaging"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/service-catalog/template.yaml"
 
   Sns:
     Type: AWS::ServiceCatalog::CloudFormationProduct
@@ -199,6 +265,19 @@ Resources:
       ProviderName: "Central SRE"
       Description: "Service Catalog compliant storage resources"
       DisplayName: "Storage"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/service-catalog/template.yaml"
 
   Dynamodb:
     Type: AWS::ServiceCatalog::CloudFormationProduct
@@ -283,3 +362,4 @@ Resources:
     Properties:
       PortfolioId: !Ref ManageStorage
       ProductId: !Ref SecretsManagerSecret
+  

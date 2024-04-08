@@ -1,0 +1,193 @@
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template for notifying accounts about changes to the service catalog.
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Name of environment you are deploying into and the value for the tag environment to be added to all resources.
+    Default: dev
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+
+  Product:
+    Type: String
+    Default: GOV.UK
+    Description: "Tag all your resources with the product name."
+
+  System:
+    Type: String
+    Default: Service-Catalog-Notification
+    Description: "Tag all your resources with the service name."
+
+  Owner:
+    Type: String
+    Default: Central-SRE
+    Description: "Tag all your resources with the team name."
+
+Resources:
+  
+  KmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for encypting messages on the SNS topic.
+      Enabled: true
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: 
+                - "sns.amazonaws.com"
+                - "events.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - "kms:Decrypt*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                "aws:PrincipalOrgID": "o-dpp53lco28"
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/notifications/template.yaml"
+
+  KeyAlias:
+    Type: "AWS::KMS::Alias"
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}"
+      TargetKeyId: !Ref KmsKey
+
+  ServiceCatalogHubSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      DisplayName: Service Catalog Hub SNS Topic
+      TopicName: service-catalog-notifications
+      KmsMasterKeyId: !Ref KmsKey
+      Tags:
+        - Key: StackName
+          Value: !Sub "${AWS::StackName}"
+        - Key: Product
+          Value: !Ref Product
+        - Key: System
+          Value: !Ref System
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Source
+          Value: "govuk-one-login/central-sre-security-hub-cfn/infrastructure/integration/cloudformation/notifications/template.yaml"
+
+  SNSAccessPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Sid: "Publish"
+            Action: 
+              - "sns:Publish"
+            Effect: Allow
+            Principal:
+              Service:
+                - "events.amazonaws.com"
+            Resource: !Ref ServiceCatalogHubSNSTopic
+          - Sid: "Consume"
+            Action: 
+              - "sns:GetTopicAttributes"
+              - "sns:Receive"
+              - "sns:Subscribe"
+            Effect: Allow
+            Principal: "*"
+            Resource: !Ref ServiceCatalogHubSNSTopic
+            Condition:
+              StringEquals:
+                "aws:PrincipalOrgID": "o-dpp53lco28"
+      Topics:
+        - !Ref ServiceCatalogHubSNSTopic
+  
+  EventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: EventBridge event rule to trigger AWS Service Catalog SNS topic.
+      Name: service-catalog-notifications
+      EventPattern:
+        source:
+          - "aws.servicecatalog"
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "servicecatalog.amazonaws.com"
+          eventName:
+            - AcceptPortfolioShare
+            - AssociateBudgetWithResource
+            - AssociatePrincipalWithPortfolio
+            - AssociateProductWithPortfolio
+            - AssociateServiceActionWithProvisioningArtifact
+            - AssociateTagOptionWithResource
+            - BatchAssociateServiceActionWithProvisioningArtifact
+            - BatchDisassociateServiceActionFromProvisioningArtifact
+            - CopyProduct
+            - CreateConstraint
+            - CreatePortfolio
+            - CreatePortfolioShare
+            - CreateProduct
+            - CreateProvisionedProductPlan
+            - CreateProvisioningArtifact
+            - CreateServiceAction
+            - CreateTagOption
+            - DeleteConstraint
+            - DeletePortfolio
+            - DeletePortfolioShare
+            - DeleteProduct
+            - DeleteProvisionedProductPlan
+            - DeleteProvisioningArtifact
+            - DeleteServiceAction
+            - DeleteTagOption
+            - DisableAWSOrganizationsAccess
+            - DisassociateBudgetFromResource
+            - DisassociatePrincipalFromPortfolio
+            - DisassociateProductFromPortfolio
+            - DisassociateServiceActionFromProvisioningArtifact
+            - DisassociateTagOptionFromResource
+            - UpdateConstraint
+            - UpdatePortfolio
+            - UpdateProduct
+            - UpdateProvisionedProduct
+            - UpdateProvisionedProductProperties
+            - UpdateProvisioningArtifact
+            - UpdateServiceAction
+            - UpdateTagOption
+      State: ENABLED
+      Targets:
+        - Id: service-catalog-sns-topic
+          Arn: !Ref ServiceCatalogHubSNSTopic
+  
