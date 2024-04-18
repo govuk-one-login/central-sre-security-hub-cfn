@@ -163,6 +163,7 @@ Resources:
               SSEAlgorithm: "aws:kms"
               KMSMasterKeyID: !Ref KMSKey
             BucketKeyEnabled: true
+      ObjectLockEnabled: true
       ObjectLockConfiguration:
         ObjectLockEnabled: Enabled
         Rule:
