@@ -23,7 +23,7 @@ resource "aws_s3_bucket_object_lock_configuration" "artifacts" {
   rule {
     default_retention {
       mode = "GOVERNANCE"
-      days = 90
+      days = 30
     }
   }
 }
