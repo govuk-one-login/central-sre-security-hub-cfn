@@ -44,12 +44,6 @@ Parameters:
     Type: CommaDelimitedList
     Description: List of Security Group IDs that control inbound and outbound traffic for the instance.
 
-  LambdaLogGroupRetention:
-    Type: Number
-    Description: This is the number of days to keep CloudWatch Logs.
-    Default: 365
-    MinValue: 30
-
   SSMParameterArn:
     Type: String
     Description: SSM parameter that holds the lambdas config, this can forward onto Secrets Manager
@@ -240,7 +234,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "${AWS::StackName}-LogGroup"
-      RetentionInDays: !Ref LambdaLogGroupRetention
+      RetentionInDays: 30
       KmsKeyId: !GetAtt KmsKey.Arn
       Tags:
         - Key: StackName
