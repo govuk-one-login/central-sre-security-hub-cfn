@@ -72,3 +72,38 @@ resource "aws_cloudformation_stack" "taskcat_lambada_secgroup" {
   }
   capabilities = ["CAPABILITY_AUTO_EXPAND"]
 }
+
+resource "aws_route53_zone" "taskcat_test_ecs" {
+  name          = "central-sre.build.sandpit.account.gov.uk"
+
+  tags = {
+    Environment = "build"
+  }
+}
+
+resource "aws_cloudformation_stack" "ecs-cluster" {
+
+  name          = "sc-product-test-ecs-cluster"
+  template_body = file("${path.module}/../../../../../../service_catalog_portfolios/compute/ecs/ecs-cluster.yaml")
+
+  parameters = {
+    LoggingBucket           = "891376909120-centralised-logging-bucket"
+    BaseUrl                 = aws_route53_zone.taskcat_test_ecs.name
+    DeletionPolicy          = "Delete"
+    UpdateReplacePolicy     = "Delete"
+  }
+
+  capabilities = ["CAPABILITY_AUTO_EXPAND"]
+}
+
+resource "aws_cloudformation_stack" "ecs-autoscaling" {
+
+  name          = "sc-product-test-ecs-autoscaling"
+  template_body = file("${path.module}/../../../../../../service_catalog_portfolios/compute/ecs/ecs-autoscaling.yaml")
+
+  parameters = {
+    ECSCluster              = aws_cloudformation_stack.ecs-cluster.output["ECSClusterName"]
+  }
+
+    capabilities = ["CAPABILITY_AUTO_EXPAND"]
+}
