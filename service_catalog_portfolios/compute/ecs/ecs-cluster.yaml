@@ -347,6 +347,7 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-${System}-${Environment}-API-GW-AccessLogs
       RetentionInDays: !Ref RetentionInDays
+      KmsKeyId: !GetAtt KmsKey.Arn
 
   APIGWAccessLogsGroupSubscriptionFilterCSLS:
     Type: AWS::Logs::SubscriptionFilter
