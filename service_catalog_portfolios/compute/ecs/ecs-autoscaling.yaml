@@ -104,9 +104,6 @@ Parameters:
     Type: Number
     Default: -50
 
-Conditions: 
-  # conditions need to be created against the scaling
-
 Resources:
   ECSAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
