@@ -51,6 +51,7 @@ Resources:
               - "arn:aws:s3:::template-storage-templatebucket-1upzyw6v9cs42"
           - Effect: Allow
             Action:
+              - "autoscaling:DeregisterScalableTarget"
               - "cloudformation:CreateStack"
               - "cloudformation:CreateChangeSet"
               - "cloudformation:DeleteChangeSet"
@@ -140,6 +141,7 @@ Resources:
               - "sqs:GetQueueAttributes"
               - "sqs:TagQueue"
               - "sqs:UntagQueue"
+              - "ssm:GetParameters"
             Resource: "*"
           - Effect: Allow
             Action:
