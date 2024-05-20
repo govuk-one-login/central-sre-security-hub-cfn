@@ -10,4 +10,5 @@
   test-ecs-autoscaling:
     parameters:
       ECSCluster: taskcat-<hash-place-holder>-ECSCluster
+      ContainerServiceName: taskcat-<hash-place-holder>-ContainerServiceName
     template: ./service_catalog_portfolios/compute/ecs/ecs-autoscaling.yaml

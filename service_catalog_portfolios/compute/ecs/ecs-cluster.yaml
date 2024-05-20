@@ -95,14 +95,6 @@ Parameters:
     Type: String
     Default: "arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2"
 
-  UseDomainName:
-    Description: "The custom domain name for your API in Amazon API Gateway."
-    Type: String
-    Default: "Yes"
-    AllowedValues:
-      - "Yes"
-      - "No"
-
 Conditions:
   IsNotDevelopment: !Or
     - !Equals [!Ref Environment, build]
@@ -201,7 +193,7 @@ Resources:
           - IfUseFargateSpot
           - FARGATE_SPOT
           - FARGATE
-        - Weight: 1
+          Weight: 1
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
@@ -276,6 +268,7 @@ Resources:
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: ECSTaskExecutionRole
       AssumeRolePolicyDocument:
         Statement:
           - Action: "sts:AssumeRole"
@@ -283,49 +276,58 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
-      Policies:
-        - PolicyName: !Sub "${AWS::StackName}-ECSTaskExecutionPolicy"
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "ecr:BatchGetImage"
-                  - "ecr:GetDownloadUrlForLayer"
-                  - "ecr:GetAuthorizationToken"
-                Resource:
-                  - "*"
-              - Effect: Allow
-                Action:
-                  - "logs:CreateLogStream"
-                  - "logs:PutLogEvents"
-                Resource:
-                  - !GetAtt "ECSAccessLogsGroup.Arn"
-                  - !Sub "${ECSAccessLogsGroup.Arn}:*"
-        - PolicyName: DynatraceGetSecrets
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "secretsmanager:GetSecretValue"
-                Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DynatraceNonProductionVariables*"
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DynatraceProductionVariables*"
-              - Effect: Allow
-                Action:
-                  - "secretsmanager:ListSecrets" 
-                Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
-              - Effect: Allow
-                Action:
-                  - "kms:Decrypt"
-                Resource:
-                  - !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundaryArn
         - !Ref PermissionsBoundaryArn
         - !Ref AWS::NoValue
+
+  ECSTaskExecutionPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-ECSTaskExecutionPolicy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ecr:BatchGetImage"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:GetAuthorizationToken"
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource:
+              - !GetAtt "ECSAccessLogsGroup.Arn"
+              - !Sub "${ECSAccessLogsGroup.Arn}:*"
+      RoleName: !Ref ECSTaskExecutionRole
+
+  DynatraceGetSecretsPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: DynatraceGetSecrets
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "secretsmanager:GetSecretValue"
+            Resource:
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DynatraceNonProductionVariables*"
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DynatraceProductionVariables*"
+          - Effect: Allow
+            Action:
+              - "secretsmanager:ListSecrets" 
+            Resource:
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
+          - Effect: Allow
+            Action:
+              - "kms:Decrypt"
+            Resource:
+              - !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/*"
+      RoleName: !Ref ECSTaskExecutionRole
 
   ApiGwHttpEndpoint:
     Type: AWS::ApiGatewayV2::Api
@@ -353,7 +355,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Condition: IsNotDevelopment
     Properties:
-      DestinationArn: "arn:aws:logs:{AWS::Region}:${{AWS::AccountID}:destination:csls_cw_logs_destination_prodpython"
+      DestinationArn: "arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2"
       FilterPattern: ""
       LogGroupName: !Ref APIGWAccessLogsGroup
 
@@ -458,7 +460,7 @@ Resources:
   AppFrontCustomDomain:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
-      DomainName: !Ref UseDomainName
+      DomainName: !Ref BaseUrl
       DomainNameConfigurations:
         - CertificateArn: !Sub "{{resolve:ssm:/${Environment}/Platform/ACM/HostedZone/Certificate/Home/ARN}}"
           EndpointType: REGIONAL
@@ -503,7 +505,7 @@ Resources:
       AlarmDescription: "Trigger the alarm if errorThreshold exceeds 1% with the minimum of 10 invocations in 2 out of the last 5 minutes"
       ActionsEnabled: false
       AlarmActions:
-        - !Sub "{{resolve:ssm:/${AlertingTopicARN}/SNS/HighAlertNotificationTopic/ARN}}"
+        - !Ref AlertingTopicARN
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
@@ -549,7 +551,7 @@ Resources:
       AlarmDescription: "Trigger the alarm if errorThreshold exceeds 1% with the minimum of 10 invocations in 2 out of the last 5 minutes"
       ActionsEnabled: true
       AlarmActions:
-        - !Sub "{{resolve:ssm:/${AlertingTopicARN}/SNS/HighAlertNotificationTopic/ARN}}"
+        - !Ref AlertingTopicARN
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
@@ -588,14 +590,14 @@ Resources:
             Stat: Sum
 
   ApiGatewayLatencyAlarm:
-    Condition: IsNotDevelopment
+    Condition: CreateAlerts
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "${AWS::StackName}-ApiGatewayLatencyAlarm"
       AlarmDescription: "Trigger the alarm if response latency exceeds 2.5 seconds with the minimum of 10 invocations in 2 out of the last 5 minutes"
       ActionsEnabled: false
       AlarmActions:
-        - !Sub "{{resolve:ssm:/${AlertingTopicARN}/SNS/LowAlertNotificationTopic/ARN}}"
+        - !Ref AlertingTopicARN
       ComparisonOperator: GreaterThanThreshold
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
@@ -632,7 +634,7 @@ Resources:
   AppFrontApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
-      DomainName: !Ref UseDomainName
+      DomainName: !Ref BaseUrl
       ApiId: !Ref ApiGateway
       Stage: !Ref ApiDefaultStage
     DependsOn:
@@ -664,19 +666,20 @@ Resources:
           "errorResponseType":"$context.error.responseType"
           }
         DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
-      Tags: 
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-ApiDefaultStage"
-        - Key: Product 
-          Value: !Ref Product
-        - Key: System
-          Value: !Ref System
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Owner
-          Value: !Ref Owner
-        - Key: Source
-          Value: !Ref Source
+      # Tags: 
+        # - Key: Name
+        #   Value: !Sub "${AWS::StackName}-ApiDefaultStage"
+        # - Key: Product 
+        #   Value: !Ref Product
+        # - Key: System
+        #   Value: !Ref System
+        # - Key: Environment
+        #   Value: !Ref Environment
+        # - Key: Owner
+        #   Value: !Ref Owner
+        # - Key: Source
+        #   Value: !Ref Source
+        # - Product: !Ref Product 
             
 Outputs:
   ECSClusterName:

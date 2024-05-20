@@ -40,29 +40,38 @@ do
     stackdir=$stacksdir/$stack
     mkdir $stackdir
     echo "Getting the stack resources..."
-    resources=($(aws cloudformation list-stack-resources \
+    resources_as_string=$(aws cloudformation list-stack-resources \
         --stack-name $stack \
-        --region $region \
-        --query 'StackResourceSummaries[*].{PhysicalResourceId: PhysicalResourceId}' \
-        --output text | sort -u))
+        --region eu-west-2 \
+        --query 'StackResourceSummaries[*].{PhysicalResourceId: PhysicalResourceId, ResourceType: ResourceType}' \
+        --output text| sort -u)
+
+    IFS=$'\n' read -d '' -r -a resources <<<"$resources_as_string"
+
     # loop through the array
     for resource in "${resources[@]}"
     do
-        if [[ $resource == arn:aws:* ]] ;
+        PhysicalResourceId=`echo $resource | awk '{print $1}'`
+        ResourceType=`echo $resource | awk '{print $2}'`
+
+        response=`aws cloudcontrol get-resource --type-name ${ResourceType} --identifier ${PhysicalResourceId}`
+        arn=`echo $response | jq -r '.ResourceDescription.Properties | fromjson.Arn'`
+        
+        if [[ $ResourceType != AWS::ApiGatewayV2::Stage ]] ;
         then
             # check that resource
             echo ""
-            echo "Checking resource $resource"
+            echo "Checking resource $PhysicalResourceId"
             aws securityhub get-findings \
             --region $region \
-            --filters "{\"ResourceId\":[{\"Value\": \"$resource\", \"Comparison\":\"EQUALS\"}], \
-               \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
+            --filters "{\"ResourceId\":[{\"Value\": \"$arn\", \"Comparison\":\"EQUALS\"}], \
+                \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
             --query "Findings[*].{Title:Title, Description:Description, Status:Compliance.Status, Severity:Severity.Label}" \
-            --output json > "./$stackdir/$resource.json" 
+            --output json > "./$stackdir/$PhysicalResourceId.json" 
             echo "Report written to:"
-            echo "./$stackdir/$resource.json"
-
+            echo "./$stackdir/$PhysicalResourceId.json"
         fi
+
     done # end loop through single stack resources
      echo "---------------------------------"
 done # end loop through all stacks
