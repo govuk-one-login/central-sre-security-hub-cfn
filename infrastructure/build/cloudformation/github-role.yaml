@@ -112,6 +112,7 @@ Resources:
               - "logs:DescribeLogGroups"
               - "logs:DescribeSubscriptionFilters"
               - "logs:PutRetentionPolicy"
+              - "logs:PutSubscriptionFilter"
               - "logs:TagResource"
               - "logs:UntagResource"
               - "iam:CreateRole"
