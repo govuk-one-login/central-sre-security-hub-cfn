@@ -51,7 +51,8 @@ Resources:
               - "arn:aws:s3:::template-storage-templatebucket-1upzyw6v9cs42"
           - Effect: Allow
             Action:
-              - "autoscaling:DeregisterScalableTarget"
+              - "application-autoscaling:DeregisterScalableTarget"
+              - "application-autoscaling:DescribeScalableTargets"
               - "cloudformation:CreateStack"
               - "cloudformation:CreateChangeSet"
               - "cloudformation:DeleteChangeSet"
@@ -108,6 +109,8 @@ Resources:
               - "logs:CreateLogGroup"
               - "logs:DeleteLogGroup"
               - "logs:DeleteRetentionPolicy"
+              - "logs:DescribeLogGroups"
+              - "logs:DescribeSubscriptionFilters"
               - "logs:PutRetentionPolicy"
               - "logs:TagResource"
               - "logs:UntagResource"
