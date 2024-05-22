@@ -668,6 +668,7 @@ Resources:
         DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
     DependsOn:
       - ApiGatewayLoggingRole
+      - ApiGatewayAccount
       # Tags: 
         # - Key: Name
         #   Value: !Sub "${AWS::StackName}-ApiDefaultStage"
@@ -698,6 +699,11 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
             
+  ApiGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !GetAtt ApiGatewayLoggingRole.Arn
+
 Outputs:
   ECSClusterName:
     Description: "The name of the ECS Cluster."
