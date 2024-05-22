@@ -666,6 +666,8 @@ Resources:
           "errorResponseType":"$context.error.responseType"
           }
         DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
+    DependsOn:
+      - ApiGatewayLoggingRole
       # Tags: 
         # - Key: Name
         #   Value: !Sub "${AWS::StackName}-ApiDefaultStage"
@@ -682,7 +684,7 @@ Resources:
         # - Product: !Ref Product 
 
   ApiGatewayLoggingRole:
-    Type: "AWS::IAM::Role"
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"

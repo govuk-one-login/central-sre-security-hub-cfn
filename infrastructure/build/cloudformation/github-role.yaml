@@ -92,6 +92,7 @@ Resources:
               - "ecs:DeleteCluster"
               - "ecs:DescribeClusters"
               - "ecs:TagResource"
+              - "iam:DetachRolePolicy"
               - "kms:Create*"
               - "kms:Decrypt"
               - "kms:Describe*"
