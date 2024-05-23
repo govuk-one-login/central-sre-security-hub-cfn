@@ -2,7 +2,7 @@
     parameters:
       System: taskcat-<hash-place-holder>
       LoggingBucket: 891376909120-centralised-logging-bucket
-      BaseUrl: central-sre.build.sandpit.account.gov.uk
+      BaseUrl: central-sre.build.account.gov.uk
       Environment: build
       DeletionPolicy: Delete
       UpdateReplacePolicy: Delete
