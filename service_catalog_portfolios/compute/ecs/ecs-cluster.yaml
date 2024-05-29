@@ -412,10 +412,6 @@ Resources:
             Principal:
               Service: apigateway.amazonaws.com
         Version: 2012-10-17
-      PermissionsBoundary: !If
-        - UsePermissionsBoundaryArn
-        - !Ref PermissionsBoundaryArn
-        - !Ref AWS::NoValue
 
   APIGWManagedLogsPolicy:
     Type: AWS::IAM::RolePolicy
@@ -426,18 +422,7 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - "logs:DescribeLogGroups"
-              - "logs:DescribeLogStreams"
-              - "logs:GetLogEvents"
-              - "logs:FilterLogEvents"
-              - "logs:CreateLogDelivery"
-              - "logs:PutResourcePolicy"
-              - "logs:UpdateLogDelivery"
-              - "logs:DeleteLogDelivery"
-              - "logs:CreateLogGroup"
-              - "logs:DescribeResourcePolicies"
-              - "logs:GetLogDelivery"
-              - "logs:ListLogDeliveries"
+              - "logs:*"
             Resource:
               - "*"
       RoleName: !Ref APIGWManagedLogsRole
