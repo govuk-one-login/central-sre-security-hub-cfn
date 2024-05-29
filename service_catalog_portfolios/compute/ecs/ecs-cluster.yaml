@@ -396,6 +396,52 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
 
+  APIGWManagedLogsAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !GetAtt APIGWManagedLogsRole.Arn
+
+  APIGWManagedLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: APIGWManagedLogsRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Version: 2012-10-17
+      PermissionsBoundary: !If
+        - UsePermissionsBoundaryArn
+        - !Ref PermissionsBoundaryArn
+        - !Ref AWS::NoValue
+
+  APIGWManagedLogsPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-APIGWManagedLogsPolicy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "logs:DescribeLogGroups"
+              - "logs:DescribeLogStreams"
+              - "logs:GetLogEvents"
+              - "logs:FilterLogEvents"
+              - "logs:CreateLogDelivery"
+              - "logs:PutResourcePolicy"
+              - "logs:UpdateLogDelivery"
+              - "logs:DeleteLogDelivery"
+              - "logs:CreateLogGroup"
+              - "logs:DescribeResourcePolicies"
+              - "logs:GetLogDelivery"
+              - "logs:ListLogDeliveries"
+            Resource:
+              - "*"
+      RoleName: !Ref APIGWManagedLogsRole
+
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
