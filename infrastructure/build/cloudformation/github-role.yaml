@@ -56,7 +56,9 @@ Resources:
               - "apigateway:POST"
               - "apigateway:PATCH"
               - "apigateway:PUT"
+              - "apigateway:SetWebACL"
               - "apigateway:TagResource"
+              - "apigateway:UpdateAccount"
               - "application-autoscaling:DeregisterScalableTarget"
               - "application-autoscaling:DescribeScalableTargets"
               - "cloudformation:CreateStack"
@@ -146,6 +148,9 @@ Resources:
               - "iam:PutRolePolicy"
               - "iam:TagRole"
               - "iam:UntagRole"
+              - "route53:ChangeResourceRecordSets"
+              - "route53:GetChange"
+              - "route53:GetHostedZone"
               - "s3:*"
               - "secretsmanager:CancelRotateSecret"
               - "secretsmanager:CreateSecret"
@@ -168,6 +173,8 @@ Resources:
               - "sqs:TagQueue"
               - "sqs:UntagQueue"
               - "ssm:GetParameters"
+              - "tag:TagResources"
+              - "waf:*"
             Resource: "*"
           - Effect: Allow
             Action:

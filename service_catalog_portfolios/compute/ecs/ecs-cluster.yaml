@@ -423,6 +423,7 @@ Resources:
           - Effect: Allow
             Action:
               - "logs:*"
+              - "apigateway:UpdateAccount"
             Resource:
               - "*"
       RoleName: !Ref APIGWManagedLogsRole
