@@ -396,37 +396,37 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
 
-  APIGWManagedLogsAccount:
-    Type: AWS::ApiGateway::Account
-    Properties:
-      CloudWatchRoleArn: !GetAtt APIGWManagedLogsRole.Arn
+  # APIGWManagedLogsAccount:
+  #   Type: AWS::ApiGateway::Account
+  #   Properties:
+  #     CloudWatchRoleArn: !GetAtt APIGWManagedLogsRole.Arn
 
-  APIGWManagedLogsRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: APIGWManagedLogsRole
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: "sts:AssumeRole"
-            Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-        Version: 2012-10-17
+  # APIGWManagedLogsRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     RoleName: APIGWManagedLogsRole
+  #     AssumeRolePolicyDocument:
+  #       Statement:
+  #         - Action: "sts:AssumeRole"
+  #           Effect: Allow
+  #           Principal:
+  #             Service: apigateway.amazonaws.com
+  #       Version: 2012-10-17
 
-  APIGWManagedLogsPolicy:
-    Type: AWS::IAM::RolePolicy
-    Properties:
-      PolicyName: !Sub "${AWS::StackName}-APIGWManagedLogsPolicy"
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - "logs:*"
-              - "apigateway:UpdateAccount"
-            Resource:
-              - "*"
-      RoleName: !Ref APIGWManagedLogsRole
+  # APIGWManagedLogsPolicy:
+  #   Type: AWS::IAM::RolePolicy
+  #   Properties:
+  #     PolicyName: !Sub "${AWS::StackName}-APIGWManagedLogsPolicy"
+  #     PolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Effect: Allow
+  #           Action:
+  #             - "logs:*"
+  #             - "apigateway:UpdateAccount"
+  #           Resource:
+  #             - "*"
+  #     RoleName: !Ref APIGWManagedLogsRole
 
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
