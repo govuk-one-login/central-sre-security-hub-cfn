@@ -40,38 +40,27 @@ do
     stackdir=$stacksdir/$stack
     mkdir $stackdir
     echo "Getting the stack resources..."
-    resources_as_string=$(aws cloudformation list-stack-resources \
-        --stack-name $stack \
+    resources_as_string=$(aws resourcegroupstaggingapi get-resources \
+        --tag-filters Key=aws:cloudformation:stack-name,Values=$stack \
         --region eu-west-2 \
-        --query 'StackResourceSummaries[*].{PhysicalResourceId: PhysicalResourceId, ResourceType: ResourceType}' \
-        --output text| sort -u)
+        | jq -r '.[] | .[] | .ResourceARN' | sort -u)
 
     IFS=$'\n' read -d '' -r -a resources <<<"$resources_as_string"
 
     # loop through the array
-    for resource in "${resources[@]}"
-    do
-        PhysicalResourceId=`echo $resource | awk '{print $1}'`
-        ResourceType=`echo $resource | awk '{print $2}'`
-
-        response=`aws cloudcontrol get-resource --type-name ${ResourceType} --identifier ${PhysicalResourceId}`
-        arn=`echo $response | jq -r '.ResourceDescription.Properties | fromjson.Arn'`
-        
-        if [[ $ResourceType != AWS::ApiGatewayV2::Stage ]] ;
-        then
-            # check that resource
-            echo ""
-            echo "Checking resource $PhysicalResourceId"
-            aws securityhub get-findings \
-            --region $region \
-            --filters "{\"ResourceId\":[{\"Value\": \"$arn\", \"Comparison\":\"EQUALS\"}], \
-                \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
-            --query "Findings[*].{Title:Title, Description:Description, Status:Compliance.Status, Severity:Severity.Label}" \
-            --output json > "./$stackdir/$PhysicalResourceId.json" 
-            echo "Report written to:"
-            echo "./$stackdir/$PhysicalResourceId.json"
-        fi
-
+    for arn in "${resources[@]}"
+    do  
+        echo ""
+        echo "Checking resource $arn"
+        filename=$(echo $arn | rev | cut -d"/" -f1  | rev)
+        aws securityhub get-findings \
+        --region $region \
+        --filters "{\"ResourceId\":[{\"Value\": \"$arn\", \"Comparison\":\"EQUALS\"}], \
+            \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
+        --query "Findings[*].{Title:Title, Description:Description, Status:Compliance.Status, Severity:Severity.Label}" \
+        --output json > "./$stackdir/$filename.json" 
+        echo "Report written to:"
+        echo "./$stackdir/$filename.json"
     done # end loop through single stack resources
      echo "---------------------------------"
 done # end loop through all stacks
