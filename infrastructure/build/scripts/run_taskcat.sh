@@ -41,7 +41,7 @@ do
     mkdir $stackdir
     echo "Getting the stack resources..."
     resources_as_string=$(aws resourcegroupstaggingapi get-resources \
-        --tag-filters "Key=aws:cloudformation:stack-name,Values="$stack" \
+        --tag-filters Key=aws:cloudformation:stack-name,Values=$stack \
         --region eu-west-2 \
         | jq -r '.[] | .[] | .ResourceARN' | sort -u)
 
@@ -50,25 +50,25 @@ do
     # loop through the array
     for resource in "${resources[@]}"
     do
-        PhysicalResourceId=`echo $resource | awk '{print $1}'`
+        ResourceId=`echo $resource | awk '{print $1}'`
         ResourceType=`echo $resource | awk '{print $2}'`
 
-        response=`aws cloudcontrol get-resource --type-name ${ResourceType} --identifier ${PhysicalResourceId}`
+        response=`aws cloudcontrol get-resource --type-name ${ResourceType} --identifier ${ResourceId}`
         arn=`echo $response | jq -r '.ResourceDescription.Properties | fromjson.Arn'`
         
         if [[ $ResourceType != AWS::ApiGatewayV2::Stage ]] ;
         then
             # check that resource
             echo ""
-            echo "Checking resource $PhysicalResourceId"
+            echo "Checking resource $ResourceId"
             aws securityhub get-findings \
             --region $region \
             --filters "{\"ResourceId\":[{\"Value\": \"$arn\", \"Comparison\":\"EQUALS\"}], \
                 \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
             --query "Findings[*].{Title:Title, Description:Description, Status:Compliance.Status, Severity:Severity.Label}" \
-            --output json > "./$stackdir/$PhysicalResourceId.json" 
+            --output json > "./$stackdir/$ResourceId.json" 
             echo "Report written to:"
-            echo "./$stackdir/$PhysicalResourceId.json"
+            echo "./$stackdir/$ResourceId.json"
         fi
 
     done # end loop through single stack resources
