@@ -52,14 +52,15 @@ do
     do  
         echo ""
         echo "Checking resource $arn"
+        filename=$(echo $arn | rev | cut -d"/" -f1  | rev)
         aws securityhub get-findings \
         --region $region \
         --filters "{\"ResourceId\":[{\"Value\": \"$arn\", \"Comparison\":\"EQUALS\"}], \
             \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
         --query "Findings[*].{Title:Title, Description:Description, Status:Compliance.Status, Severity:Severity.Label}" \
-        --output json > "./$stackdir/$arn.json" 
+        --output json > "./$stackdir/$filename.json" 
         echo "Report written to:"
-        echo "./$stackdir/$arn.json"
+        echo "./$stackdir/$filename.json"
     done # end loop through single stack resources
      echo "---------------------------------"
 done # end loop through all stacks
