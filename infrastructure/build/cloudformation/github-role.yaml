@@ -175,6 +175,7 @@ Resources:
               - "sqs:TagQueue"
               - "sqs:UntagQueue"
               - "ssm:GetParameters"
+              - "tag:GetResources"
               - "tag:TagResources"
               - "waf:*"
             Resource: "*"
