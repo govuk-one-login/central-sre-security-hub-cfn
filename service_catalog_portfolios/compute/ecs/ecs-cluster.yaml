@@ -6,7 +6,6 @@ Description: >-
   This cloudformation template creates the necessary components to deploy an ECS Cluster, API Gateway 
   and CloudFront Distribution. When used, this template will deploy a single ECS cluster for multiple Tasks/Services.
   central-sre-security-hub-cfn ecs-autoscaling cloudformation template version: v0.0.1
-  Testing
 
 Parameters:
   Environment:

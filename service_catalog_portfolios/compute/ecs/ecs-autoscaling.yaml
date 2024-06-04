@@ -5,7 +5,6 @@ Transform:
 Description: >-
   This cloudformation template creates the necessary Application Autoscaling rules against an existing ECS Cluster.
   central-sre-security-hub-cfn ecs-autoscaling cloudformation template version: v0.0.1
-  Testing
 
 Parameters:
   ECSCluster:
