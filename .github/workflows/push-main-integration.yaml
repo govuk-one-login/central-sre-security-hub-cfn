@@ -49,9 +49,9 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         uses: aws-actions/setup-sam@v2
 
-      - name: Deploy via the workflow.
+      - name: Deploy via the workflow
         if: steps.changed-files.outputs.any_changed == 'true'
-        uses: govuk-one-login/devplatform-upload-action@v3.5
+        uses: govuk-one-login/devplatform-upload-action@v3.8.1
         with:
             artifact-bucket-name: ${{ secrets.SERVICE_CATALOG_ARTIFACT_BUCKET_NAME }} 
             signing-profile-name: ${{ secrets.SERVICE_CATALOG_SIGNING_PROFILE_NAME }}
