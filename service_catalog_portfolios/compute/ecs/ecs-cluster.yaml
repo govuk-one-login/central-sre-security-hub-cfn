@@ -4,7 +4,7 @@ Transform:
 
 Description: >-
   This cloudformation template creates the necessary components to deploy an ECS Cluster, API Gateway 
-  and CloudFront Distribution. When used, this template will deploy a single ECS cluster for multiple Tasks/Services.
+  and CloudFront Distribution. When used, this template will deploy a single ECS cluster for multiple Tasks/Services.  Adding this to test a build.
 
 Parameters:
   Environment:

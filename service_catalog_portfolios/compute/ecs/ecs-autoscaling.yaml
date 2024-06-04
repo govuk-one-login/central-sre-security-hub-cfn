@@ -3,7 +3,7 @@ Transform:
   - AWS::Serverless-2016-10-31
 
 Description: >-
-  This cloudformation template creates the necessary Application Autoscaling rules against an existing ECS Cluster.
+  This cloudformation template creates the necessary Application Autoscaling rules against an existing ECS Cluster. Adding this to test a build.
 
 Parameters:
   ECSCluster:
