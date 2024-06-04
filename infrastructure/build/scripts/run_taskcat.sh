@@ -40,11 +40,10 @@ do
     stackdir=$stacksdir/$stack
     mkdir $stackdir
     echo "Getting the stack resources..."
-    resources_as_string=$(aws cloudformation list-stack-resources \
-        --stack-name $stack \
+    resources_as_string=$(aws resourcegroupstaggingapi get-resources \
+        --tag-filters "Key=StackName,Values="$stack" \
         --region eu-west-2 \
-        --query 'StackResourceSummaries[*].{PhysicalResourceId: PhysicalResourceId, ResourceType: ResourceType}' \
-        --output text| sort -u)
+        | jq -r '.[] | .[] | .ResourceARN' | sort -u)
 
     IFS=$'\n' read -d '' -r -a resources <<<"$resources_as_string"
 
