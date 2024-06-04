@@ -41,7 +41,7 @@ do
     mkdir $stackdir
     echo "Getting the stack resources..."
     resources_as_string=$(aws resourcegroupstaggingapi get-resources \
-        --tag-filters "Key=StackName,Values="$stack" \
+        --tag-filters "Key=aws:cloudformation:stack-name,Values="$stack" \
         --region eu-west-2 \
         | jq -r '.[] | .[] | .ResourceARN' | sort -u)
 
