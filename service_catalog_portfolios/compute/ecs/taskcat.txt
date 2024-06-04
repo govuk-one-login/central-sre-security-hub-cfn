@@ -1,0 +1,15 @@
+  test-ecs:
+    parameters:
+      System: taskcat-<hash-place-holder>
+      LoggingBucket: 891376909120-centralised-logging-bucket
+      BaseUrl: central-sre.build.account.gov.uk
+      Environment: build
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+    template: ./service_catalog_portfolios/compute/ecs/ecs-cluster.yaml
+
+  # test-ecs-autoscaling:
+    # parameters:
+      # ECSCluster: taskcat-<hash-place-holder>-ECSCluster
+      # ContainerServiceName: taskcat-<hash-place-holder>-ContainerServiceName
+   # template: ./service_catalog_portfolios/compute/ecs/ecs-autoscaling.yaml

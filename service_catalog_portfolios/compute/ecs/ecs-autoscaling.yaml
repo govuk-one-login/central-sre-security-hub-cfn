@@ -1,0 +1,233 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Description: >-
+  This cloudformation template creates the necessary Application Autoscaling rules against an existing ECS Cluster.
+
+Parameters:
+  ECSCluster:
+    Description: "The name of your ECS Cluster."
+    Type: String
+
+  ECSClusterMaxCapacity:
+    Description: "The maximum capacity of the ECS Cluster Auto Scaling Target."
+    Type: Number
+    Default: 6
+
+  ECSClusterMinCapacity:
+    Description: "The minimum capacity of the ECS Cluster Auto Scaling Target."
+    Type: Number 
+    Default: 3 
+
+  ContainerServiceName:
+    Description: "The name of your container service associated with the scalable target."
+    Type: String
+
+  ECSServiceAverageCPUUtilizationTargetValue:
+    Description: "The target value for the ECS Service Average CPU Utilisation metric."
+    Type: Number
+    Default: 50 
+
+  ECSServiceAverageCPUUtilizationScaleInCooldown:
+    Description: "The amount of time, in seconds, after a scale-in activity completes before another scale-in activity can start."
+    Type: Number
+    Default: 420 
+  
+  ECSServiceAverageCPUUtilizationScaleOutCooldown:
+    Description: "The amount of time, in seconds, to wait for a previous scale-out activity to take effect."
+    Type: Number
+    Default: 60 
+    
+  ScaleOutPolicyCooldown:
+    Description: "The amount of time, in seconds, to wait for a previous scaling activity to take effect."
+    Type: Number
+    Default: 120
+    
+  ScaleOutPolicyMinAdjustmentMagnitude:
+    Description: "The minimum value to scale by when the adjustment type is PercentChangeInCapacity."
+    Type: Number
+    Default: 5
+    
+  ScaleOutPolicyMetricIntervalLowerBoundOne:
+    Description: "The lower bound for the difference between the alarm threshold and the CloudWatch metric."
+    Type: Number
+    Default: 20
+    
+  ScaleOutPolicyMetricIntervalUpperBoundOne:
+    Description: "The upper bound for the difference between the alarm threshold and the CloudWatch metric."
+    Type: Number
+    Default: 30
+    
+  ScaleOutPolicyScalingAdjustmentOne:
+    Description: "The amount by which to scale."
+    Type: Number
+    Default: 200
+    
+  ScaleOutPolicyMetricIntervalLowerBoundTwo:
+    Description: "The lower bound for the difference between the alarm threshold and the CloudWatch metric."
+    Type: Number
+    Default: 30
+    
+  ScaleOutPolicyMetricIntervalUpperBoundTwo:
+    Description: "The upper bound for the difference between the alarm threshold and the CloudWatch metric."
+    Type: Number
+    Default: 35
+    
+  ScaleOutPolicyScalingAdjustmentTwo:
+    Description: "The amount by which to scale."
+    Type: Number
+    Default: 300
+    
+  MetricIntervalLowerBoundThree: 
+    Description: "The lower bound for the difference between the alarm threshold and the CloudWatch metric."
+    Type: Number
+    Default: 35
+    
+  ScaleOutPolicyScalingAdjustmentThree:
+    Description: "The amount by which to scale."
+    Type: Number
+    Default: 500
+    
+  ScaleInPolicyCooldown:
+    Description: "The amount of time, in seconds, to wait for a previous scaling activity to take effect."
+    Type: Number
+    Default: 420
+    
+  ScaleInPolicyMetricIntervalUpperBound:
+    Description: "The upper bound for the difference between the alarm threshold and the CloudWatch metric."
+    Type: Number
+    Default: -40
+    
+  ScaleInPolicyScalingAdjustment:
+    Description: "The amount by which to scale."
+    Type: Number
+    Default: -50
+
+Resources:
+  ECSAutoScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: !Ref ECSClusterMaxCapacity
+      MinCapacity: !Ref ECSClusterMinCapacity
+      ResourceId: !Join
+        - "/"
+        - - "service"
+          - !Ref ECSCluster
+          - !Ref ContainerServiceName
+      RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
+  ECSAutoScalingPolicy:
+    DependsOn: ECSAutoScalingTarget
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: ECSAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ResourceId: !Join
+        - "/"
+        - - "service"
+          - !Ref ECSCluster
+          - !Ref ContainerServiceName
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        TargetValue: !Ref ECSServiceAverageCPUUtilizationTargetValue
+        ScaleInCooldown: !Ref ECSServiceAverageCPUUtilizationScaleInCooldown
+        ScaleOutCooldown: !Ref ECSServiceAverageCPUUtilizationScaleOutCooldown
+
+  ECSStepScaleOutPolicy:
+    DependsOn: ECSAutoScalingTarget
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: ECSStepScalingOutPolicy
+      PolicyType: StepScaling
+      ResourceId: !Join
+        - "/"
+        - - "service"
+          - !Ref ECSCluster
+          - !Ref ContainerServiceName
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: !Ref ScaleOutPolicyCooldown
+        MinAdjustmentMagnitude: !Ref ScaleOutPolicyMinAdjustmentMagnitude
+        StepAdjustments:
+          - MetricIntervalLowerBound: !Ref ScaleOutPolicyMetricIntervalLowerBoundOne
+            MetricIntervalUpperBound: !Ref ScaleOutPolicyMetricIntervalUpperBoundOne
+            ScalingAdjustment: !Ref ScaleOutPolicyScalingAdjustmentOne
+          - MetricIntervalLowerBound: !Ref ScaleOutPolicyMetricIntervalLowerBoundTwo
+            MetricIntervalUpperBound: !Ref ScaleOutPolicyMetricIntervalUpperBoundTwo
+            ScalingAdjustment: !Ref ScaleOutPolicyScalingAdjustmentTwo
+          - MetricIntervalLowerBound: !Ref MetricIntervalLowerBoundThree
+            ScalingAdjustment: !Ref ScaleOutPolicyScalingAdjustmentThree
+
+  ECSStepScaleInPolicy:
+    DependsOn: ECSAutoScalingTarget
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: ECSStepScalingInPolicy
+      PolicyType: StepScaling
+      ResourceId: !Join
+        - "/"
+        - - "service"
+          - !Ref ECSCluster
+          - !Ref ContainerServiceName
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: !Ref ScaleInPolicyCooldown
+        StepAdjustments:
+          - MetricIntervalUpperBound: !Ref ScaleInPolicyMetricIntervalUpperBound
+            ScalingAdjustment: !Ref ScaleInPolicyScalingAdjustment
+
+  ECSStepScaleOutAlarm:
+    DependsOn: ECSAutoScalingTarget
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref ECSStepScaleOutPolicy
+      AlarmDescription: "ECSClusterOver60PercentCPU"
+      ComparisonOperator: "GreaterThanThreshold"
+      DatapointsToAlarm: "2"
+      Dimensions:
+        - Name: ClusterName
+          Value: !Ref ECSCluster
+        - Name: ServiceName
+          Value: !Ref ContainerServiceName
+      Unit: "Percent"
+      EvaluationPeriods: "2"
+      MetricName: "CPUUtilization"
+      Namespace: "AWS/ECS"
+      Statistic: "Average"
+      Period: "60"
+      Threshold: "60"
+     
+  ECSStepScaleInAlarm:
+    DependsOn: ECSAutoScalingTarget
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref ECSStepScaleInPolicy
+      AlarmDescription: "ECSClusterUnder60PercentCPU"
+      ComparisonOperator: "LessThanThreshold"
+      DatapointsToAlarm: "5"
+      Dimensions:
+        - Name: ClusterName
+          Value: !Ref ECSCluster
+        - Name: ServiceName
+          Value: !Ref ContainerServiceName
+      Unit: "Percent"
+      EvaluationPeriods: "5"
+      MetricName: "CPUUtilization"
+      Namespace: "AWS/ECS"
+      Statistic: "Average"
+      Period: "60"
+      Threshold: "60"

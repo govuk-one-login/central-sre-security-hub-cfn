@@ -149,7 +149,7 @@ Resources:
             Days: 30
       OwnershipControls: 
         Rules:
-          - ObjectOwnership: BucketOwnerEnforced
+          - ObjectOwnership: BucketOwnerPreferred
       LifecycleConfiguration:
         Rules:
           - Id: BucketExpiry
