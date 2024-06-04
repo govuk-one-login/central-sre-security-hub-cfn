@@ -48,29 +48,18 @@ do
     IFS=$'\n' read -d '' -r -a resources <<<"$resources_as_string"
 
     # loop through the array
-    for resource in "${resources[@]}"
-    do
-        ResourceId=`echo $resource | awk '{print $1}'`
-        ResourceType=`echo $resource | awk '{print $2}'`
-
-        response=`aws cloudcontrol get-resource --type-name ${ResourceType} --identifier ${ResourceId}`
-        arn=`echo $response | jq -r '.ResourceDescription.Properties | fromjson.Arn'`
-        
-        if [[ $ResourceType != AWS::ApiGatewayV2::Stage ]] ;
-        then
-            # check that resource
-            echo ""
-            echo "Checking resource $ResourceId"
-            aws securityhub get-findings \
-            --region $region \
-            --filters "{\"ResourceId\":[{\"Value\": \"$arn\", \"Comparison\":\"EQUALS\"}], \
-                \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
-            --query "Findings[*].{Title:Title, Description:Description, Status:Compliance.Status, Severity:Severity.Label}" \
-            --output json > "./$stackdir/$ResourceId.json" 
-            echo "Report written to:"
-            echo "./$stackdir/$ResourceId.json"
-        fi
-
+    for arn in "${resources[@]}"
+    do  
+        echo ""
+        echo "Checking resource $arn"
+        aws securityhub get-findings \
+        --region $region \
+        --filters "{\"ResourceId\":[{\"Value\": \"$arn\", \"Comparison\":\"EQUALS\"}], \
+            \"RecordState\":[{\"Value\":\"ACTIVE\", \"Comparison\":\"EQUALS\"}]}" \
+        --query "Findings[*].{Title:Title, Description:Description, Status:Compliance.Status, Severity:Severity.Label}" \
+        --output json > "./$stackdir/$arn.json" 
+        echo "Report written to:"
+        echo "./$stackdir/$arn.json"
     done # end loop through single stack resources
      echo "---------------------------------"
 done # end loop through all stacks
